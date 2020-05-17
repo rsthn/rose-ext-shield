@@ -31,6 +31,7 @@ use Rose\Expr;
 use Rose\Map;
 
 use Rose\Ext\Shield\StopValidation;
+use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Wind;
 
 if (!Extensions::isInstalled('Wind'))
@@ -45,12 +46,12 @@ class Shield
 	/*
 	**	Registered field definitions.
 	*/
-	private static $fields;
+	public static $fields;
 
 	/*
 	**	Registered validation rules.
 	*/
-	private static $rules;
+	public static $rules;
 
 	/*
 	**	Initializes the registration maps.
@@ -84,14 +85,16 @@ class Shield
 				return;
 			}
 
-			$className = self::$rules->get($key);
+			$key = Text::split(':', $key);
+
+			$className = self::$rules->get($key->get(0));
 			if (!$className)
 			{
-				throw new Error ('Undefined validation rule: ' . $key);
+				throw new Error ('Undefined validation rule: ' . $key->get(0));
 				return;
 			}
 
-			$output[] = new $className ($value);
+			$output[] = new $className ($value, $key->{1});
 		});
 
 		// A validation descriptor is an array having the target field name and an array with the validation rules.
@@ -117,21 +120,35 @@ class Shield
 		$name = $desc[0];
 		$value = $input->get($name);
 
+		$output->set($name, $value);
+		$remove = false;
+
 		foreach ($desc[1] as $rule)
 		{
 			try {
-				if ($rule->validate($name, $value, $input, $output, $context))
+				if ($rule->validate($name, $output->__nativeArray[$name], $input, $output, $context))
 					continue;
 			}
 			catch (StopValidation $e) {
-				return;
+				break;
+			}
+			catch (IgnoreField $e) {
+				$remove = true;
+				break;
+			}
+			catch (\Exception $e) {
+				$errors->set($name, '('.$rule->getIdentifier().') '.$e->getMessage());
+				$remove = true;
+				break;
 			}
 
 			$errors->set($name, Strings::get('@errors/'.$rule->getIdentifier()));
-			return;
+			$remove = true;
+			break;
 		}
 
-		$output->set($name, $value);
+		if ($remove)
+			$output->remove($name);
 	}
 };
 
@@ -171,16 +188,35 @@ Expr::register('_shield::field', function($parts, $data)
 **	Runs a validation sequence, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated fields will be
 **	available in the global context if validation succeeded.
 **
-**	shield::validate <...field>
+**	shield::validate <targetName> <...field>
 */
 Expr::register('shield::validate', function($args, $parts, $data)
 {
 	$inputData = Gateway::getInstance()->requestParams;
+	$outputData = $data;
 	$errors = new Map();
 
-	for ($i = 1; $i < $args->length; $i++)
+	$i = $args->get(1);
+	if (Shield::$fields->get($i) == null)
 	{
-		Shield::validateField ($args->get($i), $inputData, $data, $data, $errors);
+		if ($i != 'global')
+		{
+			if ($data->has($i))
+				$outputData = $data->get($i);
+			else
+				$data->set($i, $outputData = new Map());
+		}
+
+		$i = 2;
+	}
+	else
+		$i = 1;
+
+	$data->set('formData', $outputData);
+
+	for (; $i < $args->length; $i++)
+	{
+		Shield::validateField ($args->get($i), $inputData, $outputData, $data, $errors);
 	}
 
 	if ($errors->length != 0)
@@ -198,3 +234,10 @@ class_exists('Rose\Ext\Shield\MinLength');
 class_exists('Rose\Ext\Shield\MaxLength');
 class_exists('Rose\Ext\Shield\Length');
 class_exists('Rose\Ext\Shield\Pattern');
+class_exists('Rose\Ext\Shield\Set');
+class_exists('Rose\Ext\Shield\Check');
+class_exists('Rose\Ext\Shield\Default_');
+class_exists('Rose\Ext\Shield\DefaultStop');
+class_exists('Rose\Ext\Shield\MinValue');
+class_exists('Rose\Ext\Shield\MaxValue');
+class_exists('Rose\Ext\Shield\Requires');

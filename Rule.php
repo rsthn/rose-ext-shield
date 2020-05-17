@@ -25,14 +25,17 @@ use Rose\Expr;
 
 abstract class Rule
 {
+	protected $baseIdentifier;
 	protected $identifier;
 
-	public function __construct ($value)
+	public function __construct ($value, $baseIdentifier=null)
 	{
 		$this->value = $value;
+		$this->baseIdentifier = $baseIdentifier;
+		$this->identifier = null;
 	}
 
-	protected function getValue ($contet)
+	protected function getValue ($context)
 	{
 		return Expr::value ($this->value, $context);
 	}
@@ -41,7 +44,7 @@ abstract class Rule
 
 	public function getIdentifier()
 	{
-		return $this->getName() . ':' . $this->identifier;
+		return $this->getName() . ':' . ($this->baseIdentifier ? $this->baseIdentifier : $this->identifier);
 	}
 
 	public abstract function validate ($name, &$value, $input, $output, $context);

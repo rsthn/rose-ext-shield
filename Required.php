@@ -36,21 +36,31 @@ class Required extends Rule
 
 		$val = Text::trim($val);
 
-		if ($value === true || $value == 'true')
-		{
-			if (!$input->has($name))
-				return false;
+		if ($value === true) $value = 'true';
+		if ($value === false) $value = 'false';
 
-			if (Text::length($val) == 0)
-				return false;
-		}
-		else
+		switch ($value)
 		{
-			if (!$input->has($name))
-				throw new StopValidation();
+			case 'true/null':
+				if (Text::length($val) == 0)
+				{
+					$val = null;
+					throw new StopValidation();
+				}
 
-			if (Text::length($val) == 0)
-				throw new StopValidation();
+				break;
+
+			case 'true':
+				if (Text::length($val) == 0)
+					return false;
+
+				break;
+
+			case 'false':
+				if (Text::length($val) == 0)
+					throw new IgnoreField();
+
+				break;
 		}
 
 		return true;

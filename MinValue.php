@@ -1,6 +1,6 @@
 <?php
 /*
-**	Rose\Ext\Shield\Presence
+**	Rose\Ext\Shield\MinValue
 **
 **	Copyright (c) 2019-2020, RedStar Technologies, All rights reserved.
 **	https://rsthn.com/
@@ -21,12 +21,13 @@ use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
+use Rose\Text;
 
-class Presence extends Rule
+class MinValue extends Rule
 {
 	public function getName ()
 	{
-		return 'presence';
+		return 'min-value';
 	}
 
 	public function validate ($name, &$val, $input, $output, $context)
@@ -34,35 +35,8 @@ class Presence extends Rule
 		$value = $this->getValue($context);
 		$this->identifier = $value;
 
-		if ($value === true) $value = 'true';
-		if ($value === false) $value = 'false';
-
-		switch ($value)
-		{
-			case 'true/null':
-				if (!$input->has($name))
-				{
-					$val = null;
-					throw new StopValidation();
-				}
-
-				break;
-
-			case 'true':
-				if (!$input->has($name))
-					return false;
-
-				break;
-
-			case 'false':
-				if (!$input->has($name))
-					throw new IgnoreField();
-
-				break;
-		}
-
-		return true;
+		return (float)$val >= (float)$value;
 	}
 };
 
-Shield::registerRule('presence', 'Rose\Ext\Shield\Presence');
+Shield::registerRule('min-value', 'Rose\Ext\Shield\MinValue');

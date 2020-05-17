@@ -20,6 +20,7 @@ namespace Rose\Ext\Shield;
 use Rose\Errors\ArgumentError;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
+use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
 use Rose\Text;
 use Rose\Strings;

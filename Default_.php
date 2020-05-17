@@ -1,6 +1,6 @@
 <?php
 /*
-**	Rose\Ext\Shield\Presence
+**	Rose\Ext\Shield\Def
 **
 **	Copyright (c) 2019-2020, RedStar Technologies, All rights reserved.
 **	https://rsthn.com/
@@ -19,50 +19,28 @@ namespace Rose\Ext\Shield;
 
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
-use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
+use Rose\Text;
 
-class Presence extends Rule
+class Default_ extends Rule
 {
 	public function getName ()
 	{
-		return 'presence';
+		return 'default';
 	}
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
 		$value = $this->getValue($context);
-		$this->identifier = $value;
+		$val = Text::trim($val);
 
-		if ($value === true) $value = 'true';
-		if ($value === false) $value = 'false';
-
-		switch ($value)
+		if (!$input->has($name) || Text::length($val) == 0)
 		{
-			case 'true/null':
-				if (!$input->has($name))
-				{
-					$val = null;
-					throw new StopValidation();
-				}
-
-				break;
-
-			case 'true':
-				if (!$input->has($name))
-					return false;
-
-				break;
-
-			case 'false':
-				if (!$input->has($name))
-					throw new IgnoreField();
-
-				break;
+			$val = $value;
 		}
 
 		return true;
 	}
 };
 
-Shield::registerRule('presence', 'Rose\Ext\Shield\Presence');
+Shield::registerRule('default', 'Rose\Ext\Shield\Default_');
