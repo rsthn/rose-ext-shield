@@ -1,6 +1,6 @@
 <?php
 /*
-**	Rose\Ext\Shield\Required
+**	Rose\Ext\Shield\FileType
 **
 **	Copyright (c) 2019-2020, RedStar Technologies, All rights reserved.
 **	https://rsthn.com/
@@ -20,13 +20,14 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield;
+use Rose\IO\Path;
 use Rose\Text;
 
-class Required extends Rule
+class FileType extends Rule
 {
 	public function getName ()
 	{
-		return 'required';
+		return 'file-type';
 	}
 
 	public function validate ($name, &$val, $input, $output, $context)
@@ -34,43 +35,19 @@ class Required extends Rule
 		$value = $this->getValue($context);
 		$this->identifier = $value;
 
-		if (is_string($val))
-		{
-			$val = Text::trim($val);
-			$is_empty = Text::length($val) == 0;
-		}
-		else
-			$is_empty = $val == null;
+		if (\Rose\typeOf($val) != 'Rose\\Map')
+			return false;
 
-		if ($value === true) $value = 'true';
-		if ($value === false) $value = 'false';
+		if ($val->error != 0)
+			return false;
 
-		switch ($value)
-		{
-			case 'true/null':
-				if ($is_empty)
-				{
-					$val = null;
-					throw new StopValidation();
-				}
+		$value = Text::split(',', $value)->map(function($i) { return Text::trim($i); });
 
-				break;
-
-			case 'true':
-				if ($is_empty)
-					return false;
-
-				break;
-
-			case 'false':
-				if ($is_empty)
-					throw new IgnoreField();
-
-				break;
-		}
+		if ($value->indexOf(Text::toLowerCase(Text::substring(Path::extname($val->name), 1))) === null)
+			return false;
 
 		return true;
 	}
 };
 
-Shield::registerRule('required', 'Rose\Ext\Shield\Required');
+Shield::registerRule('file-type', 'Rose\Ext\Shield\FileType');

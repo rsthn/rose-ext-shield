@@ -75,13 +75,22 @@ class Shield
 	*/
 	public static function getDescriptor (string $name, \Rose\Map $rules, \Rose\Map $data)
 	{
-		$output = [ ];
+		$output_rules = [];
 
-		$rules->forEach (function($value, $key) use (&$output, &$name)
+		$input_name = $name;
+		$output_name = $name;
+
+		$rules->forEach (function($value, $key) use (&$output_rules, &$input_name, &$output_name)
 		{
-			if ($key == 'name')
+			if ($key == 'input')
 			{
-				$name = Expr::value($value, $data);
+				$input_name = Expr::value($value, $data);
+				return;
+			}
+
+			if ($key == 'output')
+			{
+				$output_name = Expr::value($value, $data);
 				return;
 			}
 
@@ -94,11 +103,11 @@ class Shield
 				return;
 			}
 
-			$output[] = new $className ($value, $key->{1});
+			$output_rules[] = new $className ($value, $key->{1});
 		});
 
-		// A validation descriptor is an array having the target field name and an array with the validation rules.
-		return [$name, $output];
+		// A validation descriptor is an array having three fields as follows.
+		return [$input_name, $output_name, $output_rules];
 	}
 
 	/*
@@ -117,16 +126,18 @@ class Shield
 		$desc = self::$fields->get($fieldName);
 		if (!$desc) throw new ArgumentError ('(shield::validate) Undefined field validation descriptor: '.$fieldName);
 
-		$name = $desc[0];
-		$value = $input->get($name);
+		$input_name = $desc[0];
+		$value = $input->get($input_name);
 
-		$output->set($name, $value);
+		$output_name = $desc[1];
+		$output->set($output_name, $value);
+
 		$remove = false;
 
-		foreach ($desc[1] as $rule)
+		foreach ($desc[2] as $rule)
 		{
 			try {
-				if ($rule->validate($name, $output->__nativeArray[$name], $input, $output, $context))
+				if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context))
 					continue;
 			}
 			catch (StopValidation $e) {
@@ -137,18 +148,18 @@ class Shield
 				break;
 			}
 			catch (\Exception $e) {
-				$errors->set($name, '('.$rule->getIdentifier().') '.$e->getMessage());
+				$errors->set($input_name, '('.$rule->getIdentifier().') '.$e->getMessage());
 				$remove = true;
 				break;
 			}
 
-			$errors->set($name, Strings::get('@errors/'.$rule->getIdentifier()));
+			$errors->set($input_name, Strings::get('@errors/'.$rule->getIdentifier()));
 			$remove = true;
 			break;
 		}
 
 		if ($remove)
-			$output->remove($name);
+			$output->remove($output_name);
 	}
 };
 
@@ -241,3 +252,5 @@ class_exists('Rose\Ext\Shield\DefaultStop');
 class_exists('Rose\Ext\Shield\MinValue');
 class_exists('Rose\Ext\Shield\MaxValue');
 class_exists('Rose\Ext\Shield\Requires');
+class_exists('Rose\Ext\Shield\FileType');
+class_exists('Rose\Ext\Shield\MaxFileSize');
