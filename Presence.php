@@ -48,13 +48,22 @@ class Presence extends Rule
 
 				break;
 
+			case 'true/empty':
+				if (!$input->has($name))
+				{
+					$val = '';
+					throw new StopValidation();
+				}
+
+				break;
+
 			case 'true':
 				if (!$input->has($name))
 					return false;
 
 				break;
 
-			case 'false':
+			case 'true/ignore': case 'false':
 				if (!$input->has($name))
 					throw new IgnoreField();
 

@@ -56,13 +56,22 @@ class Required extends Rule
 
 				break;
 
+			case 'true/empty':
+				if ($is_empty)
+				{
+					$val = '';
+					throw new StopValidation();
+				}
+
+				break;
+
 			case 'true':
 				if ($is_empty)
 					return false;
 
 				break;
 
-			case 'false':
+			case 'true/ignore': case 'false':
 				if ($is_empty)
 					throw new IgnoreField();
 
