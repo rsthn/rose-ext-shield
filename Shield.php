@@ -254,3 +254,4 @@ class_exists('Rose\Ext\Shield\MaxValue');
 class_exists('Rose\Ext\Shield\Requires');
 class_exists('Rose\Ext\Shield\FileType');
 class_exists('Rose\Ext\Shield\MaxFileSize');
+class_exists('Rose\Ext\Shield\Ignore');
