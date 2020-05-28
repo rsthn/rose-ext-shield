@@ -153,7 +153,7 @@ class Shield
 				break;
 			}
 
-			$errors->set($input_name, Strings::get('@errors/'.$rule->getIdentifier()));
+			$errors->set($input_name, Strings::get('@messages/'.$rule->getIdentifier()));
 			$remove = true;
 			break;
 		}
