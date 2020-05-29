@@ -1,7 +1,7 @@
 {
     "name": "rsthn/rose-ext-shield",
     "description": "Shield Validation Extension",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "rose-extension",
     "license": "Apache-2.0",
     "authors": [
@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Rose\\Ext\\Shield": "."
+            "Rose\\Ext\\Shield\\": "."
         }
     }
 }
