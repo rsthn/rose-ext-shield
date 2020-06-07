@@ -19,6 +19,7 @@ namespace Rose\Ext\Shield;
 
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
+use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
 use Rose\Text;
 
@@ -31,10 +32,22 @@ class Requires extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+		$value = Text::split('/', $this->getValue($context));
+		$this->identifier = $value->get(0);
 
-		return $output->has($value);
+		if ($output->has($value->get(0)))
+			return true;
+
+		if ($value->length > 1) switch ($value->get(1))
+		{
+			case 'ignore':
+				throw new IgnoreField();
+
+			case 'stop':
+				throw new StopValidation();
+		}
+
+		return false;
 	}
 };
 
