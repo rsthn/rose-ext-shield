@@ -35,6 +35,11 @@ abstract class Rule
 		$this->identifier = null;
 	}
 
+	protected function valueIsString ()
+	{
+		return \Rose\typeOf($this->value) == 'Rose\\Arry' && $this->value->length == 1 && $this->value->get(0)->type == 'string';
+	}
+
 	protected function getValue ($context)
 	{
 		return Expr::value ($this->value, $context);

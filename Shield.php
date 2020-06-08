@@ -29,6 +29,7 @@ use Rose\Extensions;
 use Rose\Text;
 use Rose\Expr;
 use Rose\Map;
+use Rose\Arry;
 
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
@@ -73,15 +74,18 @@ class Shield
 	/*
 	**	Verifies that the given rule set is valid and returns a validation descriptor.
 	*/
-	public static function getDescriptor (string $name, \Rose\Map $rules, \Rose\Map $data)
+	public static function getDescriptor (string $name, \Rose\Arry $rules, \Rose\Map $data)
 	{
 		$output_rules = [];
 
 		$input_name = $name;
 		$output_name = $name;
 
-		$rules->forEach (function($value, $key) use (&$output_rules, &$input_name, &$output_name)
+		$rules->forEach (function($value) use (&$output_rules, &$input_name, &$output_name)
 		{
+			$key = $value->get(0);
+			$value = $value->get(1);
+
 			if ($key == 'input')
 			{
 				$input_name = Expr::value($value, $data);
@@ -176,7 +180,7 @@ Expr::register('_shield::field', function($parts, $data)
 	if (!is_string($name))
 		throw new ArgumentError ('shield::field expects \'name\' parameter to be a string.');
 
-	$rules = new Map();
+	$rules = new Arry();
 
 	for ($i = 2; $i < $parts->length(); $i += 2)
 	{
@@ -185,10 +189,11 @@ Expr::register('_shield::field', function($parts, $data)
 			$key = substr($key, 0, strlen($key)-1);
 
 		$tmp = $parts->get($i+1);
-		if ($tmp->length == 1 && $tmp->get(0)->type != 'template')
+
+		if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
 			$tmp = Expr::value($tmp, $data);
 			
-		$rules->set($key, $tmp);
+		$rules->push(new Arry ([$key, $tmp], false));
 	}
 
 	Shield::registerDescriptor ($name, Shield::getDescriptor($name, $rules, $data));

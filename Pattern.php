@@ -35,11 +35,18 @@ class Pattern extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+		if (!$this->valueIsString())
+		{
+			$value = $this->getValue($context);
+			$this->identifier = $value;
 
-		$regex = Strings::getInstance()->regex->$value;
-		if (!$regex) throw new ArgumentError('Undefined Regex pattern: '.$value);
+			$regex = Strings::getInstance()->regex->$value;
+			if (!$regex) throw new ArgumentError('Undefined Regex pattern: '.$value);
+		}
+		else
+		{
+			$regex = $this->getValue($context);
+		}
 
 		return Regex::_matches ($regex, $val);
 	}
