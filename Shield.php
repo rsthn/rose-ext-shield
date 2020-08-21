@@ -136,10 +136,14 @@ class Shield
 		$output_name = $desc[1];
 		$output->set($output_name, $value);
 
+		$output->set('_selfName', $output_name);
+
 		$remove = false;
 
 		foreach ($desc[2] as $rule)
 		{
+			$output->set('_selfValue', $output->__nativeArray[$output_name]);
+
 			try {
 				if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context))
 					continue;
@@ -161,6 +165,9 @@ class Shield
 			$remove = true;
 			break;
 		}
+
+		$output->remove('_selfName');
+		$output->remove('_selfValue');
 
 		if ($remove)
 			$output->remove($output_name);
