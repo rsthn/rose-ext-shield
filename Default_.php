@@ -31,12 +31,11 @@ class Default_ extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		$value = $this->getValue($context);
 		$val = Text::trim($val);
 
 		if (!$input->has($name) || Text::length($val) == 0)
 		{
-			$val = $value;
+			$val = $this->getValue($context);
 		}
 
 		return true;
