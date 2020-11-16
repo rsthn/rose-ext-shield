@@ -34,6 +34,7 @@ use Rose\Arry;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Wind;
+use Rose\Ext\Wind\WindError;
 
 if (!Extensions::isInstalled('Wind'))
 	return;
@@ -243,7 +244,7 @@ Expr::register('shield::validate', function($args, $parts, $data)
 	}
 
 	if ($errors->length != 0)
-		Wind::reply([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
 	return null;
 });
