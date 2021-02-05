@@ -32,7 +32,6 @@ class Required extends Rule
 	public function validate ($name, &$val, $input, $output, $context)
 	{
 		$value = $this->getValue($context);
-		$this->identifier = $value;
 
 		if (is_string($val))
 		{
@@ -44,6 +43,8 @@ class Required extends Rule
 
 		if ($value === true) $value = 'true';
 		if ($value === false) $value = 'false';
+
+		$this->identifier = $value;
 
 		switch ($value)
 		{

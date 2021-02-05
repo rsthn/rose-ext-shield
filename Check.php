@@ -31,7 +31,7 @@ class Check extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		return !!$this->getValue($context);
+		return \Rose\bool($this->getValue($context));
 	}
 };
 
