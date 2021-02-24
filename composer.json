@@ -1,7 +1,7 @@
 {
     "name": "rsthn/rose-ext-shield",
-    "description": "Shield Validation Extension (Wind)",
-    "version": "1.0.13",
+    "description": "Shield Validation Extension",
+    "version": "1.0.14",
     "type": "rose-extension",
     "license": "Apache-2.0",
     "authors": [
@@ -15,8 +15,7 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "rsthn/rose-extension-installer": "*",
-        "rsthn/rose-core": "^3.0"
+        "rsthn/rose-extension-installer": "*"
     },
     "autoload": {
         "psr-4": {
