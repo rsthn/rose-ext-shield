@@ -56,12 +56,18 @@ class Shield
 	public static $rules;
 
 	/*
+	**	Accumulated validation errors.
+	*/
+	public static $errors;
+
+	/*
 	**	Initializes the registration maps.
 	*/
 	public static function init()
 	{
 		self::$fields = new Map();
 		self::$rules = new Map();
+		self::$errors = null;
 	}
 
 	/*
@@ -156,7 +162,8 @@ class Shield
 				$remove = true;
 				break;
 			}
-			catch (\Exception $e) {
+			catch (\Exception $e)
+			{
 				$errors->set($input_name, '('.$rule->getIdentifier().') '.$e->getMessage());
 				$remove = true;
 				break;
@@ -209,6 +216,36 @@ Expr::register('_shield::field', function($parts, $data)
 });
 
 /**
+**	Begins quiet validation mode. All validation errors will be accumulated, and can later be retrieved by calling `shield::end`.
+**
+**	shield::begin
+*/
+Expr::register('shield::begin', function($args, $parts, $data)
+{
+	Shield::$errors = new Map();
+});
+
+/**
+**	Ends quiet validation mode. If there are any errors and `automatic` is set to `true` (default), then Wind::R_VALIDATION_ERROR will be thrown,
+**	otherwise, the error map will just be returned.
+**
+**	shield::end [automatic:bool=true]
+*/
+Expr::register('shield::end', function($args, $parts, $data)
+{
+	$err = Shield::$errors;
+	Shield::$errors = null;
+
+	if ($args->length == 2 && \Rose\bool($args->get(1)) != true)
+		return $err;
+
+	if ($err->length != 0)
+		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $err ]);
+
+	return null;
+});
+
+/**
 **	Runs a validation sequence, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated fields will be
 **	available in the global context if validation succeeded.
 **
@@ -218,7 +255,7 @@ Expr::register('shield::validate', function($args, $parts, $data)
 {
 	$inputData = Gateway::getInstance()->requestParams;
 	$outputData = $data;
-	$errors = new Map();
+	$errors = Shield::$errors != null ? Shield::$errors : new Map();
 
 	$i = $args->get(1);
 	if (Shield::$fields->get($i) == null)
@@ -243,7 +280,7 @@ Expr::register('shield::validate', function($args, $parts, $data)
 		Shield::validateField ($args->get($i), $inputData, $outputData, $data, $errors);
 	}
 
-	if ($errors->length != 0)
+	if ($errors !== Shield::$errors && $errors->length != 0)
 		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
 	return null;
@@ -259,7 +296,7 @@ Expr::register('shield::validateData', function($args, $parts, $data)
 {
 	$inputData = $args->get(1);
 	$outputData = $data;
-	$errors = new Map();
+	$errors = Shield::$errors != null ? Shield::$errors : new Map();
 
 	$i = $args->get(2);
 	if (Shield::$fields->get($i) == null)
@@ -284,7 +321,7 @@ Expr::register('shield::validateData', function($args, $parts, $data)
 		Shield::validateField ($args->get($i), $inputData, $outputData, $data, $errors);
 	}
 
-	if ($errors->length != 0)
+	if ($errors !== Shield::$errors && $errors->length != 0)
 		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
 	return $outputData;
@@ -309,3 +346,4 @@ class_exists('Rose\Ext\Shield\Requires');
 class_exists('Rose\Ext\Shield\FileType');
 class_exists('Rose\Ext\Shield\MaxFileSize');
 class_exists('Rose\Ext\Shield\Ignore');
+class_exists('Rose\Ext\Shield\Extract');
