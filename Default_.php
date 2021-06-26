@@ -34,9 +34,7 @@ class Default_ extends Rule
 		$val = Text::trim($val);
 
 		if (!$input->has($name) || Text::length($val) == 0)
-		{
 			$val = $this->getValue($context);
-		}
 
 		return true;
 	}
