@@ -35,9 +35,10 @@ class Pattern extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		if (!$this->valueIsString())
+		$value = $this->getValue($context);
+
+		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
 		{
-			$value = $this->getValue($context);
 			$this->identifier = $value;
 
 			$regex = Strings::getInstance()->regex->$value;
@@ -45,7 +46,7 @@ class Pattern extends Rule
 		}
 		else
 		{
-			$regex = $this->getValue($context);
+			$regex = $value;
 		}
 
 		return Regex::_matches ($regex, $val);
