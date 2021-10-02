@@ -347,3 +347,4 @@ class_exists('Rose\Ext\Shield\FileType');
 class_exists('Rose\Ext\Shield\MaxFileSize');
 class_exists('Rose\Ext\Shield\Ignore');
 class_exists('Rose\Ext\Shield\Extract');
+class_exists('Rose\Ext\Shield\Stop');
