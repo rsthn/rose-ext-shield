@@ -150,6 +150,7 @@ class Shield
 		foreach ($desc[2] as $rule)
 		{
 			$output->set('_selfValue', $output->__nativeArray[$output_name]);
+			$context->set('$', $output->__nativeArray[$output_name]);
 
 			try {
 				if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context))
@@ -176,6 +177,7 @@ class Shield
 
 		$output->remove('_selfName');
 		$output->remove('_selfValue');
+		$context->remove('$');
 
 		if ($remove)
 			$output->remove($output_name);

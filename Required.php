@@ -49,6 +49,7 @@ class Required extends Rule
 		switch ($value)
 		{
 			case 'true/null':
+			case 'true|null':
 				if ($is_empty)
 				{
 					$val = null;
@@ -58,6 +59,7 @@ class Required extends Rule
 				break;
 
 			case 'true/empty':
+			case 'true|empty':
 				if ($is_empty)
 				{
 					$val = '';
@@ -73,6 +75,7 @@ class Required extends Rule
 				break;
 
 			case 'true/ignore': case 'false':
+			case 'true|ignore':
 				if ($is_empty)
 					throw new IgnoreField();
 

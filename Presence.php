@@ -40,6 +40,7 @@ class Presence extends Rule
 		switch ($value)
 		{
 			case 'true/null':
+			case 'true|null':
 				if (!$input->has($name))
 				{
 					$val = null;
@@ -49,6 +50,7 @@ class Presence extends Rule
 				break;
 
 			case 'true/empty':
+			case 'true|empty':
 				if (!$input->has($name))
 				{
 					$val = '';
@@ -64,6 +66,7 @@ class Presence extends Rule
 				break;
 
 			case 'true/ignore': case 'false':
+			case 'true|ignore':
 				if (!$input->has($name))
 					throw new IgnoreField();
 
