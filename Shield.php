@@ -88,7 +88,7 @@ class Shield
 		$input_name = $name;
 		$output_name = $name;
 
-		$rules->forEach (function($value) use (&$output_rules, &$input_name, &$output_name)
+		$rules->forEach (function($value) use (&$output_rules, &$input_name, &$output_name, &$data)
 		{
 			$key = $value->get(0);
 			$value = $value->get(1);
