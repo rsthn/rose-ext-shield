@@ -136,8 +136,9 @@ class Shield
 	{
 		if (is_string($desc))
 		{
+			$name = $desc;
 			$desc = self::$fields->get($desc);
-			if (!$desc) throw new ArgumentError ('(shield::validate) Undefined validation descriptor: '.$desc);
+			if (!$desc) throw new ArgumentError ('(shield::validate) Undefined validation descriptor: '.$name);
 		}
 
 		$input_name = $input_name ?? $desc[0];
