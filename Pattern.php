@@ -42,7 +42,7 @@ class Pattern extends Rule
 			$this->identifier = $value;
 
 			$regex = Strings::getInstance()->regex->$value;
-			if (!$regex) throw new ArgumentError('Undefined Regex pattern: '.$value);
+			if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
 		}
 		else
 		{

@@ -165,7 +165,8 @@ class Shield
 			}
 			catch (\Exception $e)
 			{
-				$errors->set($input_name, '('.$rule->getIdentifier().') '.$e->getMessage());
+				$tmp = $rule->getIdentifier();
+				$errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
 				$remove = true;
 				break;
 			}
@@ -350,3 +351,5 @@ class_exists('Rose\Ext\Shield\MaxFileSize');
 class_exists('Rose\Ext\Shield\Ignore');
 class_exists('Rose\Ext\Shield\Extract');
 class_exists('Rose\Ext\Shield\Stop');
+class_exists('Rose\Ext\Shield\JsonData');
+class_exists('Rose\Ext\Shield\ContentType');

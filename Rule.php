@@ -18,6 +18,7 @@
 namespace Rose\Ext\Shield;
 
 use Rose\Expr;
+use Rose\Arry;
 
 /*
 **	Shield validation rule.
@@ -49,7 +50,8 @@ abstract class Rule
 
 	public function getIdentifier()
 	{
-		return $this->getName() . ':' . ($this->baseIdentifier ? $this->baseIdentifier : $this->identifier);
+		$val = $this->baseIdentifier ? $this->baseIdentifier : $this->identifier;
+		return $val ? ($this->getName() . ':' . $val) : $this->getName();
 	}
 
 	public abstract function validate ($name, &$value, $input, $output, $context);
