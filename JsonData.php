@@ -267,4 +267,4 @@ class JsonData extends Rule
 	}
 };
 
-Shield::registerRule('json-data', 'Rose\Ext\Shield\JsonData');
+Shield::registerRule('data', 'Rose\Ext\Shield\JsonData');
