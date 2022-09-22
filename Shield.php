@@ -130,21 +130,22 @@ class Shield
 	}
 
 	/*
-	**	Validates a field from the given inputData.
+	**	Validates a value.
 	*/
-	public static function validateField (string $fieldName, \Rose\Map $input, \Rose\Map $output, \Rose\Map $context, \Rose\Map $errors)
+	public static function validateValue ($desc, $input_name, $output_name, \Rose\Map $input, \Rose\Map $output, \Rose\Map $context, \Rose\Map $errors)
 	{
-		$desc = self::$fields->get($fieldName);
-		if (!$desc) throw new ArgumentError ('(shield::validate) Undefined field validation descriptor: '.$fieldName);
+		if (is_string($desc))
+		{
+			$desc = self::$fields->get($desc);
+			if (!$desc) throw new ArgumentError ('(shield::validate) Undefined validation descriptor: '.$desc);
+		}
 
-		$input_name = $desc[0];
+		$input_name = $input_name ?? $desc[0];
+		$output_name = $output_name ?? $desc[1];
+
 		$value = $input->get($input_name);
-
-		$output_name = $desc[1];
 		$output->set($output_name, $value);
-
 		$output->set('_selfName', $output_name);
-
 		$remove = false;
 
 		foreach ($desc[2] as $rule)
@@ -176,24 +177,28 @@ class Shield
 			break;
 		}
 
+		$value = $output->__nativeArray[$output_name];
+
 		$output->remove('_selfName');
 		$output->remove('_selfValue');
 		$context->remove('$');
 
-		if ($remove)
+		if ($remove) {
 			$output->remove($output_name);
+			return null;
+		}
+
+		return $value;
 	}
 };
 
 /**
-**	Registers a field validation descriptor.
-**
+**	Returns a field validation descriptor.
 **	shield::field <name> <...rules>
 */
 Expr::register('_shield::field', function($parts, $data)
 {
 	$name = Expr::value($parts->get(1), $data);
-	$rules = Expr::value($parts->get(2), $data);
 
 	if (!is_string($name))
 		throw new ArgumentError ('shield::field expects \'name\' parameter to be a string.');
@@ -214,8 +219,38 @@ Expr::register('_shield::field', function($parts, $data)
 		$rules->push(new Arry ([$key, $tmp], false));
 	}
 
+	return Shield::getDescriptor($name, $rules, $data);
+});
+
+/**
+**	Registers a type validation descriptor.
+**	shield::type <name> <...rules>
+*/
+Expr::register('_shield::type', function($parts, $data)
+{
+	$name = Expr::value($parts->get(1), $data);
+
+	if (!is_string($name))
+		throw new ArgumentError ('shield::type expects \'name\' parameter to be a string.');
+
+	$rules = new Arry();
+
+	for ($i = 2; $i < $parts->length(); $i += 2)
+	{
+		$key = Expr::value($parts->get($i), $data);
+		if (substr($key, -1) == ':')
+			$key = substr($key, 0, strlen($key)-1);
+
+		$tmp = $parts->get($i+1);
+
+		if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
+			$tmp = Expr::value($tmp, $data);
+			
+		$rules->push(new Arry ([$key, $tmp], false));
+	}
+
 	Shield::registerDescriptor ($name, Shield::getDescriptor($name, $rules, $data));
-	return $name;
+	return null;
 });
 
 /**
@@ -261,9 +296,9 @@ Expr::register('shield::validate', function($args, $parts, $data)
 	$errors = Shield::$errors != null ? Shield::$errors : new Map();
 
 	$i = $args->get(1);
-	if (Shield::$fields->get($i) == null)
+	if (is_string($i) && Shield::$fields->get($i) == null)
 	{
-		if ($i != 'global')
+		if ($i !== 'global')
 		{
 			if ($data->has($i))
 				$outputData = $data->get($i);
@@ -279,13 +314,12 @@ Expr::register('shield::validate', function($args, $parts, $data)
 	$data->set('formData', $outputData);
 
 	for (; $i < $args->length; $i++)
-	{
-		Shield::validateField ($args->get($i), $inputData, $outputData, $data, $errors);
-	}
+		Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
 
 	if ($errors !== Shield::$errors && $errors->length != 0)
 		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
+	$data->remove('formData');
 	return null;
 });
 
@@ -320,13 +354,12 @@ Expr::register('shield::validateData', function($args, $parts, $data)
 	$data->set('formData', $outputData);
 
 	for (; $i < $args->length; $i++)
-	{
-		Shield::validateField ($args->get($i), $inputData, $outputData, $data, $errors);
-	}
+		Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
 
 	if ($errors !== Shield::$errors && $errors->length != 0)
 		throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
+	$data->remove('formData');
 	return $outputData;
 });
 

@@ -31,6 +31,7 @@ class JsonData extends Rule
 			case 'object':
 			case 'array':
 			case 'vector':
+			case 'type':
 				return true;
 		}
 
@@ -70,6 +71,7 @@ class JsonData extends Rule
 										case 'object': $mode = 1; break;
 										case 'array': $mode = 3; break;
 										case 'vector': $mode = 4; break;
+										case 'type': $mode = 5; break;
 									}
 								}
 								else
@@ -104,6 +106,11 @@ class JsonData extends Rule
 								else
 									$node->data->set($i, Expr::value($item, $ctx));
 								break;
+
+							case 5: // Type name (type xxx)
+								$node->data->set($i, Expr::value($item, $ctx));
+								$mode = -1;
+								break;
 						}
 					}
 
@@ -127,7 +134,7 @@ class JsonData extends Rule
 		return '';
 	}
 
-	private function checkType ($node, &$value, $path, $opt)
+	private function checkType ($node, &$value, $path, $opt, $ctx, &$root)
 	{
 		//\Rose\trace($node);
 		//exit;
@@ -184,7 +191,7 @@ class JsonData extends Rule
 						if ($opt) $key = Text::substring($key, 0, -1);
 
 						$val = $value->get($key);
-						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt);
+						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt, $ctx, $root);
 						$out->set($key, $val);
 					}
 					catch (StopValidation $e) {
@@ -210,7 +217,7 @@ class JsonData extends Rule
 				{
 					try {
 						$val = $value->get($i);
-						$this->checkType($node->get(1), $val, $path . '.' . $i, false);
+						$this->checkType($node->get(1), $val, $path . '.' . $i, false, $ctx, $root);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -239,7 +246,7 @@ class JsonData extends Rule
 				{
 					try {
 						$val = $value->get($i-1);
-						$this->checkType($node->get($i), $val, $path . '.' . ($i-1), false);
+						$this->checkType($node->get($i), $val, $path . '.' . ($i-1), false, $ctx, $root);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -254,6 +261,22 @@ class JsonData extends Rule
 
 				$value = $out;
 				break;
+
+			case 'type':
+				$errors = new Map();
+
+				$tmp = new Map();
+				$tmp->set('tmp', $value);
+				Shield::validateValue ($node->get(1), 'tmp', 'tmp', $tmp, $tmp, $ctx, $errors);
+
+				if ($errors->has('tmp'))
+					throw new Error($errors->get('tmp') . ': ' . $path);
+
+				if (!$tmp->has('tmp'))
+					throw new IgnoreField();
+
+				$value = $tmp->get('tmp');
+				break;
 		}
 
 		if ($err->length() != 0)
@@ -262,7 +285,7 @@ class JsonData extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		$this->checkType (self::flatten($this->value, $context), $val, $name, false);
+		$this->checkType (self::flatten($this->value, $context), $val, $name, false, $context, $val);
 		return true;
 	}
 };
