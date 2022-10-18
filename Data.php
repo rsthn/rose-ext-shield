@@ -15,11 +15,11 @@ use Rose\Regex;
 use Rose\Arry;
 use Rose\Map;
 
-class JsonData extends Rule
+class Data extends Rule
 {
 	public function getName ()
 	{
-		return 'json-data';
+		return 'data';
 	}
 
 	protected static function isTypeNode ($node)
@@ -32,6 +32,7 @@ class JsonData extends Rule
 			case 'array':
 			case 'vector':
 			case 'type':
+			case 'value':
 				return true;
 		}
 
@@ -61,29 +62,43 @@ class JsonData extends Rule
 					for ($i = 0; $i < $node->data->length() && $mode != -1; $i++)
 					{
 						$item = $node->data->get($i);
-						
+
 						switch ($mode)
 						{
 							case 0:
-								if (self::isTypeNode($item)) {
+								if (self::isTypeNode($item))
+								{
 									$node->data->set($i, $item->get(0)->data);
 									switch ($item->get(0)->data) {
 										case 'object': $mode = 1; break;
 										case 'array': $mode = 3; break;
 										case 'vector': $mode = 4; break;
 										case 'type': $mode = 5; break;
+										case 'value': $mode = 6; break;
 									}
 								}
 								else
-									throw new Error('Expected a json-data type name');
+									throw new Error('Expected a type name: object|array|vector|type|value');
+
 								break;
 
 							case 1: // Key
-								$node->data->set($i, Expr::value($item, $ctx));
+								$tmp = Expr::value($item, $ctx);
+								$node->data->set($i, $tmp);
+
+								if ($tmp === '...')
+								{
+									if ((1+$i) != $node->data->length())
+										throw new Error('Specifier `...` must be the last element in the object');
+
+									$mode = 0;
+									break;
+								}
+
 								$mode = 2;
 								break;
 
-							case 2: // Value
+							case 2: // Value (after key)
 								if ($item->length() == 1 && $item->get(0)->type === 'template' && self::isTypeNode($item->get(0)->data->get(0)))
 									$node->data->set($i, self::flatten($item, $ctx));
 								else
@@ -91,7 +106,7 @@ class JsonData extends Rule
 								$mode = 1;
 								break;
 
-							case 3: // Array Value (Single) (array xxx)
+							case 3: // Array Type (array xxx)
 								if ($item->length() == 1 && $item->get(0)->type === 'template' && self::isTypeNode($item->get(0)->data->get(0)))
 									$node->data->set($i, self::flatten($item, $ctx));
 								else
@@ -111,17 +126,22 @@ class JsonData extends Rule
 								$node->data->set($i, Expr::value($item, $ctx));
 								$mode = -1;
 								break;
+
+							case 6: // Specific value (value xxx)
+								$node->data->set($i, Expr::value($item, $ctx));
+								$mode = -1;
+								break;
 						}
 					}
 
 					if ($mode == 2)
-						throw new Error('Expected a type name after '.$node->data->last().' in json-data');
+						throw new Error('Expected a type name after `'.$node->data->last().'` in object descriptor');
 
 					$node = $node->data;
 					break;
 
 				default:
-					throw new Error('Unexpected token in json-data descriptor');
+					throw new Error('Unexpected token in data descriptor');
 			}
 
 		}
@@ -136,15 +156,12 @@ class JsonData extends Rule
 
 	private function checkType ($node, &$value, $path, $opt, $ctx, &$root)
 	{
-		//\Rose\trace($node);
-		//exit;
-
 		if (\Rose\typeOf($node, true) === 'string')
 		{
 			if (is_string($value))
 				$value = Text::trim($value);
 
-			if ($node === '*')
+			if ($node === '*' || $node === 'any' || $node === '...')
 				return;
 
 			$tmp = (string)$value;
@@ -182,13 +199,26 @@ class JsonData extends Rule
 					throw new Error('type:object: ' . $path);
 
 				$out = new Map();
+				$keys = $value->keys();
 
 				for ($i = 1; $i < $node->length(); $i += 2)
 				{
-					try {
+					try
+					{
 						$key = $node->get($i);
+						if ($key === '...')
+						{
+							$keys->forEach( function($key) use (&$out, &$value) {
+								$out->set($key, $value->get($key));
+							});
+							break;
+						}
+
 						$opt = Text::endsWith($key, '?');
 						if ($opt) $key = Text::substring($key, 0, -1);
+
+						$val = $keys->indexOf($key);
+						if ($val !== null) $keys->remove($val);
 
 						$val = $value->get($key);
 						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt, $ctx, $root);
@@ -212,12 +242,13 @@ class JsonData extends Rule
 					throw new Error('type:array: ' . $path);
 
 				$out = new Arry();
+				$rule = $node->get(1);
 
 				for ($i = 0; $i < $value->length(); $i++)
 				{
 					try {
 						$val = $value->get($i);
-						$this->checkType($node->get(1), $val, $path . '.' . $i, false, $ctx, $root);
+						$this->checkType($rule, $val, $path . '.' . $i, false, $ctx, $root);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -277,6 +308,11 @@ class JsonData extends Rule
 
 				$value = $tmp->get('tmp');
 				break;
+
+			case 'value':
+				if ($value != $node->get(1))
+					throw new Error('value: ' . $path . ' should be `' . $node->get(1) . '`');
+				break;
 		}
 
 		if ($err->length() != 0)
@@ -290,4 +326,33 @@ class JsonData extends Rule
 	}
 };
 
-Shield::registerRule('data', 'Rose\Ext\Shield\JsonData');
+Shield::registerRule('data', 'Rose\Ext\Shield\Data');
+
+/*
+	(shield::type my_rule
+		required true
+		data (array (object
+			count "integer"
+			type "text"
+		))
+	)
+	(shield::field input
+		json-load "POST"
+		data (object
+				id "integer"
+				desc "text"
+				mode (value "MODE_1")
+				value any
+				second_value *
+				answers (array (object
+					count "integer"
+					type "text"
+					desc "text"
+				))
+				other_answers (type my_rule)
+				colors (array ...)
+				options (object ...)
+			)
+	)
+
+*/

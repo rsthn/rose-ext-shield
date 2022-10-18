@@ -385,5 +385,6 @@ class_exists('Rose\Ext\Shield\MaxFileSize');
 class_exists('Rose\Ext\Shield\Ignore');
 class_exists('Rose\Ext\Shield\Extract');
 class_exists('Rose\Ext\Shield\Stop');
-class_exists('Rose\Ext\Shield\JsonData');
+class_exists('Rose\Ext\Shield\Data');
 class_exists('Rose\Ext\Shield\ContentType');
+class_exists('Rose\Ext\Shield\JsonLoad');
