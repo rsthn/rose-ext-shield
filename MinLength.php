@@ -35,7 +35,7 @@ class MinLength extends Rule
 		$value = (int)$this->getValue($context);
 		$this->identifier = $value;
 
-		return Text::length($val) >= $value;
+		return Text::length(Text::toString($val)) >= $value;
 	}
 };
 

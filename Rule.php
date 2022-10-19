@@ -19,6 +19,7 @@ namespace Rose\Ext\Shield;
 
 use Rose\Expr;
 use Rose\Arry;
+use Rose\Text;
 
 /*
 **	Shield validation rule.
@@ -51,7 +52,7 @@ abstract class Rule
 	public function getIdentifier()
 	{
 		$val = $this->baseIdentifier ? $this->baseIdentifier : $this->identifier;
-		return $val ? ($this->getName() . ':' . $val) : $this->getName();
+		return $val ? (\Rose\isString($val) && $val[0] == '@' ? Text::substring($val, 1) : $this->getName() . ':' . $val) : $this->getName();
 	}
 
 	public abstract function validate ($name, &$value, $input, $output, $context);

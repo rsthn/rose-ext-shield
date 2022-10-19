@@ -36,7 +36,6 @@ class Pattern extends Rule
 	public function validate ($name, &$val, $input, $output, $context)
 	{
 		$value = $this->getValue($context);
-
 		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
 		{
 			$this->identifier = $value;
@@ -45,9 +44,7 @@ class Pattern extends Rule
 			if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
 		}
 		else
-		{
 			$regex = $value;
-		}
 
 		return Regex::_matches ($regex, $val);
 	}

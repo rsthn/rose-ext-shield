@@ -78,6 +78,14 @@ class Shield
 		self::$rules->set($ruleName, $className);
 	}
 
+	/**
+	 * Returns `true` if the specified rule exists.
+	 */
+	public static function ruleExists (string $ruleName)
+	{
+		return self::$rules->has($ruleName);
+	}
+
 	/*
 	**	Verifies that the given rule set is valid and returns a validation descriptor.
 	*/
@@ -129,12 +137,20 @@ class Shield
 		self::$fields->set($name, $desc);
 	}
 
+	/**
+	 * Returns an error message from the `messages` strings.
+	 */
+	public static function getMessage ($id)
+	{
+		return Strings::get('@messages.'.$id);
+	}
+
 	/*
 	**	Validates a value.
 	*/
 	public static function validateValue ($desc, $input_name, $output_name, \Rose\Map $input, \Rose\Map $output, \Rose\Map $context, \Rose\Map $errors)
 	{
-		if (is_string($desc))
+		if (\Rose\isString($desc))
 		{
 			$name = $desc;
 			$desc = self::$fields->get($desc);
@@ -173,7 +189,7 @@ class Shield
 				break;
 			}
 
-			$errors->set($input_name, Strings::get('@messages.'.$rule->getIdentifier()));
+			$errors->set($input_name, Shield::getMessage($rule->getIdentifier()));
 			$remove = true;
 			break;
 		}
@@ -191,6 +207,30 @@ class Shield
 
 		return $value;
 	}
+
+	/**
+	 * Parses the rules of a validation descriptor.
+	 */
+	public static function parseDescriptor ($parts, $data, $i=0)
+	{
+		$rules = new Arry();
+
+		for (; $i < $parts->length(); $i += 2)
+		{
+			$key = Expr::value($parts->get($i), $data);
+			if (substr($key, -1) == ':')
+				$key = substr($key, 0, strlen($key)-1);
+	
+			$tmp = $parts->get($i+1);
+	
+			if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
+				$tmp = Expr::value($tmp, $data);
+				
+			$rules->push(new Arry ([$key, $tmp], false));
+		}
+
+		return $rules;
+	}
 };
 
 /**
@@ -201,26 +241,10 @@ Expr::register('_shield::field', function($parts, $data)
 {
 	$name = Expr::value($parts->get(1), $data);
 
-	if (!is_string($name))
+	if (!\Rose\isString($name))
 		throw new ArgumentError ('shield::field expects \'name\' parameter to be a string.');
 
-	$rules = new Arry();
-
-	for ($i = 2; $i < $parts->length(); $i += 2)
-	{
-		$key = Expr::value($parts->get($i), $data);
-		if (substr($key, -1) == ':')
-			$key = substr($key, 0, strlen($key)-1);
-
-		$tmp = $parts->get($i+1);
-
-		if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
-			$tmp = Expr::value($tmp, $data);
-			
-		$rules->push(new Arry ([$key, $tmp], false));
-	}
-
-	return Shield::getDescriptor($name, $rules, $data);
+	return Shield::getDescriptor($name, Shield::parseDescriptor($parts, $data, 2), $data);
 });
 
 /**
@@ -231,7 +255,7 @@ Expr::register('_shield::type', function($parts, $data)
 {
 	$name = Expr::value($parts->get(1), $data);
 
-	if (!is_string($name))
+	if (!\Rose\isString($name))
 		throw new ArgumentError ('shield::type expects \'name\' parameter to be a string.');
 
 	$rules = new Arry();
@@ -297,7 +321,7 @@ Expr::register('shield::validate', function($args, $parts, $data)
 	$errors = Shield::$errors != null ? Shield::$errors : new Map();
 
 	$i = $args->get(1);
-	if (is_string($i) && Shield::$fields->get($i) == null)
+	if (\Rose\isString($i) && Shield::$fields->get($i) == null)
 	{
 		if ($i !== 'global')
 		{
@@ -388,3 +412,5 @@ class_exists('Rose\Ext\Shield\Stop');
 class_exists('Rose\Ext\Shield\Data');
 class_exists('Rose\Ext\Shield\ContentType');
 class_exists('Rose\Ext\Shield\JsonLoad');
+class_exists('Rose\Ext\Shield\Cast');
+class_exists('Rose\Ext\Shield\Expect');

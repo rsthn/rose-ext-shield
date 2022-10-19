@@ -33,6 +33,13 @@ class Data extends Rule
 			case 'vector':
 			case 'type':
 			case 'value':
+			case 'rules':
+
+			case 'boolean':
+			case 'integer':
+			case 'number':
+			case 'string':
+			case 'null':
 				return true;
 		}
 
@@ -75,10 +82,16 @@ class Data extends Rule
 										case 'vector': $mode = 4; break;
 										case 'type': $mode = 5; break;
 										case 'value': $mode = 6; break;
+										case 'rules': $mode = 7; break;
+										case 'boolean': $mode = 7; break;
+										case 'integer': $mode = 7; break;
+										case 'number': $mode = 7; break;
+										case 'string': $mode = 7; break;
+										case 'null': $mode = 7; break;
 									}
 								}
 								else
-									throw new Error('Expected a type name: object|array|vector|type|value');
+									throw new Error('Expected a type name: object|array|vector|type|value|rules|boolean|integer|number|string|null');
 
 								break;
 
@@ -106,7 +119,7 @@ class Data extends Rule
 								$mode = 1;
 								break;
 
-							case 3: // Array Type (array xxx)
+							case 3: // Array Type (array <type>)
 								if ($item->length() == 1 && $item->get(0)->type === 'template' && self::isTypeNode($item->get(0)->data->get(0)))
 									$node->data->set($i, self::flatten($item, $ctx));
 								else
@@ -115,20 +128,25 @@ class Data extends Rule
 								$mode = -1;
 								break;
 
-							case 4: // Vector Values (vector x y z)
+							case 4: // Vector Values (vector <types...>)
 								if ($item->length() == 1 && $item->get(0)->type === 'template' && self::isTypeNode($item->get(0)->data->get(0)))
 									$node->data->set($i, self::flatten($item, $ctx));
 								else
 									$node->data->set($i, Expr::value($item, $ctx));
 								break;
 
-							case 5: // Type name (type xxx)
+							case 5: // Type name (type <typeName>)
 								$node->data->set($i, Expr::value($item, $ctx));
 								$mode = -1;
 								break;
 
-							case 6: // Specific value (value xxx)
+							case 6: // Specific value (value <value>)
 								$node->data->set($i, Expr::value($item, $ctx));
+								$mode = -1;
+								break;
+
+							case 7: // Shield validation rules.
+								$node->data->set(1, Shield::getDescriptor('', Shield::parseDescriptor($node->data, $ctx, 1), $ctx));
 								$mode = -1;
 								break;
 						}
@@ -154,30 +172,29 @@ class Data extends Rule
 		return '';
 	}
 
-	private function checkType ($node, &$value, $path, $opt, $ctx, &$root)
+	private function checkType ($node, &$value, $path, $opt, $ctx, &$root, $input, &$key)
 	{
+		// Just check pattern if $node is a string.
 		if (\Rose\typeOf($node, true) === 'string')
 		{
-			if (is_string($value))
+			if (\Rose\isString($value))
 				$value = Text::trim($value);
 
 			if ($node === '*' || $node === 'any' || $node === '...')
 				return;
 
 			$tmp = (string)$value;
-			$name = 'pattern:' . $node;
+			$name = Shield::getMessage('pattern') . ':' . $node;
 
 			if (Text::length($tmp) == 0)
 			{
-				if ($opt)
-					throw new IgnoreField();
-
-				throw new ArgumentError('required: ' . $path);
+				if ($opt) throw new IgnoreField();
+				throw new ArgumentError(Shield::getMessage('required:true') . ': ' . $path);
 			}
 
 			if ($node[0] != '/' && $node[0] != '|') {
 				$regex = Strings::getInstance()->regex->$node;
-				if (!$regex) throw new ArgumentError('undefined_regex: '.$node);
+				if (!$regex) throw new ArgumentError(Shield::getMessage('undefined_regex') . ': ' . $node);
 			}
 			else {
 				$regex = $node;
@@ -191,12 +208,13 @@ class Data extends Rule
 		}
 
 		$err = new Arry();
+		$validate = false;
 
 		switch ($node->first())
 		{
 			case 'object':
 				if (\Rose\typeOf($value, true) !== 'Rose\\Map')
-					throw new Error('type:object: ' . $path);
+					throw new Error(Shield::getMessage('expected_object') . ': ' . $path);
 
 				$out = new Map();
 				$keys = $value->keys();
@@ -217,11 +235,11 @@ class Data extends Rule
 						$opt = Text::endsWith($key, '?');
 						if ($opt) $key = Text::substring($key, 0, -1);
 
-						$val = $keys->indexOf($key);
-						if ($val !== null) $keys->remove($val);
+						$exists = $keys->indexOf($key);
+						if ($exists !== null) $keys->remove($exists);
 
 						$val = $value->get($key);
-						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt, $ctx, $root);
+						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt, $ctx, $root, $value, $key);
 						$out->set($key, $val);
 					}
 					catch (StopValidation $e) {
@@ -239,7 +257,7 @@ class Data extends Rule
 
 			case 'array':
 				if (\Rose\typeOf($value, true) !== 'Rose\\Arry')
-					throw new Error('type:array: ' . $path);
+					throw new Error(Shield::getMessage('expected_array') . ': ' . $path);
 
 				$out = new Arry();
 				$rule = $node->get(1);
@@ -248,7 +266,8 @@ class Data extends Rule
 				{
 					try {
 						$val = $value->get($i);
-						$this->checkType($rule, $val, $path . '.' . $i, false, $ctx, $root);
+						$j = $i;
+						$this->checkType($rule, $val, $path . '.' . $i, false, $ctx, $root, $value, $j);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -266,10 +285,10 @@ class Data extends Rule
 
 			case 'vector':
 				if (\Rose\typeOf($value, true) !== 'Rose\\Arry')
-					throw new Error('type:vector: ' . $path);
+					throw new Error(Shield::getMessage('expected_vector') . ': ' . $path);
 
 				if ($value->length() < $node->length()-1)
-					throw new Error('min-size:' . ($node->length()-1) . ': ' . $path);
+					throw new Error(Shield::getMessage('min-size:' . ($node->length()-1)) . ': ' . $path);
 
 				$out = new Arry();
 
@@ -277,7 +296,8 @@ class Data extends Rule
 				{
 					try {
 						$val = $value->get($i-1);
-						$this->checkType($node->get($i), $val, $path . '.' . ($i-1), false, $ctx, $root);
+						$j = $i-1;
+						$this->checkType($node->get($i), $val, $path . '.' . ($i-1), false, $ctx, $root, $value, $j);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -310,9 +330,73 @@ class Data extends Rule
 				break;
 
 			case 'value':
-				if ($value != $node->get(1))
-					throw new Error('value: ' . $path . ' should be `' . $node->get(1) . '`');
+				if ($value !== $node->get(1)) throw new Error('value: ' . $path . ' should be `' . Text::toString($node->get(1)) . '`');
 				break;
+
+			case 'rules':
+				$validate = true;
+				break;
+
+			case 'boolean':
+				if (!\Rose\isBool($value)) {
+					if ($opt) throw new IgnoreField();
+					throw new Error(Shield::getMessage('expected_boolean') . ': ' . $path);
+				}
+				$validate = true;
+				break;
+
+			case 'integer':
+				if (!\Rose\isInteger($value)) {
+					if ($opt) throw new IgnoreField();
+					throw new Error(Shield::getMessage('expected_integer') . ': ' . $path);
+				}
+				$validate = true;
+				break;
+
+			case 'number':
+				if (!\Rose\isNumber($value)) {
+					if ($opt) throw new IgnoreField();
+					throw new Error(Shield::getMessage('expected_number') . ': ' . $path);
+				}
+				$validate = true;
+				break;
+
+			case 'string':
+				if (!\Rose\isString($value)) {
+					if ($opt) throw new IgnoreField();
+					throw new Error(Shield::getMessage('expected_string') . ': ' . $path);
+				}
+				$validate = true;
+				break;
+
+			case 'null':
+				if ($value !== null) {
+					if ($opt) throw new IgnoreField();
+					throw new Error(Shield::getMessage('expected_null') . ': ' . $path);
+				}
+				break;
+
+			default:
+				throw new Error(Shield::getMessage('unknown_descriptor') . ': ' . $node->get(0));
+		}
+
+		if ($validate && $node->length() > 1)
+		{
+			$errors = new Map();
+			$output = new Map();
+
+			Shield::validateValue ($node->get(1), $key, $key, $input, $output, $ctx, $errors);
+
+			if ($errors->has($key))
+				throw new Error($errors->get($key) . ': ' . $path);
+
+			if (!$output->has($key))
+				throw new IgnoreField();
+
+			$value = $output->get($key);
+
+			if ($node->get(1)[1] != '')
+				$key = $node->get(1)[1];
 		}
 
 		if ($err->length() != 0)
@@ -321,7 +405,7 @@ class Data extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		$this->checkType (self::flatten($this->value, $context), $val, $name, false, $context, $val);
+		$this->checkType (self::flatten($this->value, $context), $val, $name, false, $context, $val, $input, $name);
 		return true;
 	}
 };
@@ -352,6 +436,12 @@ Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 				other_answers (type my_rule)
 				colors (array ...)
 				options (object ...)
+
+				some_value (boolean)
+				some_value (integer)
+				some_value (number default 25.5)
+				some_value (string max-length 10)
+				some_value (null)
 			)
 	)
 

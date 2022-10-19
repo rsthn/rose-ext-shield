@@ -32,17 +32,15 @@ class Presence extends Rule
 	public function validate ($name, &$val, $input, $output, $context)
 	{
 		$value = $this->getValue($context);
-		$this->identifier = $value;
-
 		if ($value === true) $value = 'true';
 		if ($value === false) $value = 'false';
+		$this->identifier = $value;
 
 		switch ($value)
 		{
 			case 'true/null':
 			case 'true|null':
-				if (!$input->has($name))
-				{
+				if (!$input->has($name)) {
 					$val = null;
 					throw new StopValidation();
 				}
@@ -51,8 +49,7 @@ class Presence extends Rule
 
 			case 'true/empty':
 			case 'true|empty':
-				if (!$input->has($name))
-				{
+				if (!$input->has($name)) {
 					$val = '';
 					throw new StopValidation();
 				}
@@ -62,14 +59,12 @@ class Presence extends Rule
 			case 'true':
 				if (!$input->has($name))
 					return false;
-
 				break;
 
 			case 'true/ignore': case 'false':
 			case 'true|ignore':
 				if (!$input->has($name))
 					throw new IgnoreField();
-
 				break;
 		}
 

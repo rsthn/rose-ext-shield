@@ -35,18 +35,16 @@ class Extract extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		if (!$this->valueIsString())
+		$value = $this->getValue($context);
+		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
 		{
-			$value = $this->getValue($context);
 			$this->identifier = $value;
 
 			$regex = Strings::getInstance()->regex->$value;
-			if (!$regex) throw new ArgumentError('Undefined Regex pattern: '.$value);
+			if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
 		}
 		else
-		{
-			$regex = $this->getValue($context);
-		}
+			$regex = $value;
 
 		$val = Regex::_extract ($regex, $val, '', 0);
 		return true;

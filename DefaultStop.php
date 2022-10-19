@@ -31,10 +31,10 @@ class DefaultStop extends Rule
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
-		if (is_string($val))
+		if (\Rose\isString($val))
 			$val = Text::trim($val);
 
-		if (!$input->has($name) || (is_string($val) && Text::length($val) == 0))
+		if (!$input->has($name) || (\Rose\isString($val) && Text::length($val) == 0))
 		{
 			$val = $this->getValue($context);
 			throw new StopValidation();

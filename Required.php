@@ -33,13 +33,13 @@ class Required extends Rule
 	{
 		$value = $this->getValue($context);
 
-		if (is_string($val))
+		if (\Rose\isString($val))
 		{
 			$val = Text::trim($val);
 			$is_empty = Text::length($val) == 0;
 		}
 		else
-			$is_empty = $val == null;
+			$is_empty = $val === null;
 
 		if ($value === true) $value = 'true';
 		if ($value === false) $value = 'false';
@@ -48,17 +48,16 @@ class Required extends Rule
 
 		switch ($value)
 		{
-			case 'true/null':
+			case 'true/null': // TODO deprecate this method of using /
 			case 'true|null':
-				if ($is_empty)
-				{
+				if ($is_empty) {
 					$val = null;
 					throw new StopValidation();
 				}
 
 				break;
 
-			case 'true/empty':
+			case 'true/empty': // TODO deprecate this method of using /
 			case 'true|empty':
 				if ($is_empty)
 				{
@@ -74,11 +73,11 @@ class Required extends Rule
 
 				break;
 
-			case 'true/ignore': case 'false':
+			case 'true/ignore': // TODO deprecate this method of using /
+			case 'false':
 			case 'true|ignore':
 				if ($is_empty)
 					throw new IgnoreField();
-
 				break;
 		}
 
