@@ -172,7 +172,7 @@ class Data extends Rule
 		return '';
 	}
 
-	private function checkType ($node, &$value, $path, $opt, $ctx, &$root, $input, &$key)
+	private function checkType ($node, &$value, $path, $opt, $ctx, &$root, $input, &$r_key)
 	{
 		// Just check pattern if $node is a string.
 		if (\Rose\typeOf($node, true) === 'string')
@@ -385,18 +385,18 @@ class Data extends Rule
 			$errors = new Map();
 			$output = new Map();
 
-			Shield::validateValue ($node->get(1), $key, $key, $input, $output, $ctx, $errors);
+			Shield::validateValue ($node->get(1), $r_key, $r_key, $input, $output, $ctx, $errors);
 
-			if ($errors->has($key))
-				throw new Error($errors->get($key) . ': ' . $path);
+			if ($errors->has($r_key))
+				throw new Error($errors->get($r_key) . ': ' . $path);
 
-			if (!$output->has($key))
+			if (!$output->has($r_key))
 				throw new IgnoreField();
 
-			$value = $output->get($key);
+			$value = $output->get($r_key);
 
 			if ($node->get(1)[1] != '')
-				$key = $node->get(1)[1];
+				$r_key = $node->get(1)[1];
 		}
 
 		if ($err->length() != 0)
