@@ -1,7 +1,7 @@
 {
     "name": "rsthn/rose-ext-shield",
     "description": "Shield Validation Extension",
-    "version": "1.0.27",
+    "version": "1.0.28",
     "type": "rose-extension",
     "license": "Apache-2.0",
     "authors": [

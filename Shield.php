@@ -414,3 +414,4 @@ class_exists('Rose\Ext\Shield\ContentType');
 class_exists('Rose\Ext\Shield\JsonLoad');
 class_exists('Rose\Ext\Shield\Cast');
 class_exists('Rose\Ext\Shield\Expect');
+class_exists('Rose\Ext\Shield\Block');
