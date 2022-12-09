@@ -157,6 +157,12 @@ class Shield
 			if (!$desc) throw new ArgumentError ('(shield::validate) Undefined validation descriptor: '.$name);
 		}
 
+		$_out = $context->get('$out');
+		$_in = $context->get('$in');
+		$_val = $context->get('$');
+		$context->set('$out', $output);
+		$context->set('$in', $input);
+
 		$input_name = $input_name ?? $desc[0];
 		$output_name = $output_name ?? $desc[1];
 
@@ -184,7 +190,11 @@ class Shield
 			catch (\Exception $e)
 			{
 				$tmp = $rule->getIdentifier();
-				$errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
+				if (!$tmp)
+					$errors->merge($rule->getErrors(), true);
+				else
+					$errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
+
 				$remove = true;
 				break;
 			}
@@ -194,11 +204,14 @@ class Shield
 			break;
 		}
 
+		$context->set('$out', $_out);
+		$context->set('$in', $_in);
+		$context->set('$', $_val);
+
 		$value = $output->__nativeArray[$output_name];
 
 		$output->remove('_selfName');
 		$output->remove('_selfValue');
-		$context->remove('$');
 
 		if ($remove) {
 			$output->remove($output_name);

@@ -189,12 +189,17 @@ class Data extends Rule
 			if (Text::length($tmp) == 0)
 			{
 				if ($opt) throw new IgnoreField();
-				throw new ArgumentError(Shield::getMessage('required:true') . ': ' . $path);
+
+				$this->errors->set($path, Shield::getMessage('required:true'));
+				throw new ArgumentError('');
 			}
 
 			if ($node[0] != '/' && $node[0] != '|') {
 				$regex = Strings::getInstance()->regex->$node;
-				if (!$regex) throw new ArgumentError(Shield::getMessage('undefined_regex') . ': ' . $node);
+				if (!$regex) {
+					$this->errors->set($path, Shield::getMessage('undefined_regex') . ': ' . $node);
+					throw new ArgumentError('');
+				}
 			}
 			else {
 				$regex = $node;
@@ -202,19 +207,24 @@ class Data extends Rule
 			}
 
 			if (!Regex::_matches ($regex, $value))
-				throw new ArgumentError($name . ': ' . $path);
+			{
+				$this->errors->set($path, $name);
+				throw new ArgumentError('');
+			}
 
 			return;
 		}
 
-		$err = new Arry();
 		$validate = false;
 
 		switch ($node->first())
 		{
 			case 'object':
 				if (\Rose\typeOf($value, true) !== 'Rose\\Map')
-					throw new Error(Shield::getMessage('expected_object') . ': ' . $path);
+				{
+					$this->errors->set($path, Shield::getMessage('expected_object'));
+					throw new Error('');
+				}
 
 				$out = new Map();
 				$keys = $value->keys();
@@ -231,15 +241,17 @@ class Data extends Rule
 							});
 							break;
 						}
-
+						
 						$opt = Text::endsWith($key, '?');
 						if ($opt) $key = Text::substring($key, 0, -1);
+
+						$cpath = $path !== '' ? ($path . '.' . $key) : $key;
 
 						$exists = $keys->indexOf($key);
 						if ($exists !== null) $keys->remove($exists);
 
 						$val = $value->get($key);
-						$this->checkType($node->get($i+1), $val, $path . '.' . $key, $opt, $ctx, $root, $value, $key);
+						$this->checkType($node->get($i+1), $val, $cpath, $opt, $ctx, $out, $value, $key);
 						$out->set($key, $val);
 					}
 					catch (StopValidation $e) {
@@ -248,7 +260,8 @@ class Data extends Rule
 					catch (IgnoreField $e) {
 					}
 					catch (\Exception $e) {
-						$err->push($e->getMessage());
+						if ($e->getMessage() != '')
+							$this->errors->set($cpath, $e->getMessage());
 					}
 				}
 
@@ -256,8 +269,10 @@ class Data extends Rule
 				break;
 
 			case 'array':
-				if (\Rose\typeOf($value, true) !== 'Rose\\Arry')
-					throw new Error(Shield::getMessage('expected_array') . ': ' . $path);
+				if (\Rose\typeOf($value, true) !== 'Rose\\Arry') {
+					$this->errors->set($path, Shield::getMessage('expected_array'));
+					throw new Error('');
+				}
 
 				$out = new Arry();
 				$rule = $node->get(1);
@@ -265,9 +280,10 @@ class Data extends Rule
 				for ($i = 0; $i < $value->length(); $i++)
 				{
 					try {
+						$cpath = $path !== '' ? ($path . '.' . $i) : $i;
 						$val = $value->get($i);
 						$j = $i;
-						$this->checkType($rule, $val, $path . '.' . $i, false, $ctx, $root, $value, $j);
+						$this->checkType($rule, $val, $cpath, false, $ctx, $out, $value, $j);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -276,7 +292,8 @@ class Data extends Rule
 					catch (IgnoreField $e) {
 					}
 					catch (\Exception $e) {
-						$err->push($e->getMessage());
+						if ($e->getMessage() != '')
+							$this->errors->set($cpath, $e->getMessage());
 					}
 				}
 
@@ -285,19 +302,26 @@ class Data extends Rule
 
 			case 'vector':
 				if (\Rose\typeOf($value, true) !== 'Rose\\Arry')
-					throw new Error(Shield::getMessage('expected_vector') . ': ' . $path);
+				{
+					$this->errors->set($path, Shield::getMessage('expected_vector'));
+					throw new Error('');
+				}
 
 				if ($value->length() < $node->length()-1)
-					throw new Error(Shield::getMessage('min-size:' . ($node->length()-1)) . ': ' . $path);
+				{
+					$this->errors->set($path, Shield::getMessage('min-size:' . ($node->length()-1)));
+					throw new Error('');
+				}
 
 				$out = new Arry();
 
 				for ($i = 1; $i < $node->length(); $i++)
 				{
 					try {
+						$cpath = $path !== '' ? ($path . '.' . ($i-1)) : ($i-1);
 						$val = $value->get($i-1);
 						$j = $i-1;
-						$this->checkType($node->get($i), $val, $path . '.' . ($i-1), false, $ctx, $root, $value, $j);
+						$this->checkType($node->get($i), $val, $cpath, false, $ctx, $out, $value, $j);
 						$out->push($val);
 					}
 					catch (StopValidation $e) {
@@ -306,7 +330,8 @@ class Data extends Rule
 					catch (IgnoreField $e) {
 					}
 					catch (\Exception $e) {
-						$err->push($e->getMessage());
+						if ($e->getMessage() != '')
+							$this->errors->set($cpath, $e->getMessage());
 					}
 				}
 
@@ -321,7 +346,10 @@ class Data extends Rule
 				Shield::validateValue ($node->get(1), 'tmp', 'tmp', $tmp, $tmp, $ctx, $errors);
 
 				if ($errors->has('tmp'))
-					throw new Error($errors->get('tmp') . ': ' . $path);
+				{
+					$this->errors->set($path, $errors->get('tmp'));
+					throw new Error('');
+				}
 
 				if (!$tmp->has('tmp'))
 					throw new IgnoreField();
@@ -330,7 +358,11 @@ class Data extends Rule
 				break;
 
 			case 'value':
-				if ($value !== $node->get(1)) throw new Error('value: ' . $path . ' should be `' . Text::toString($node->get(1)) . '`');
+				if ($value !== $node->get(1)) {
+					$this->errors->set($path, 'value should be `' . Text::toString($node->get(1)) . '`');
+					throw new Error('');
+				}
+
 				break;
 
 			case 'rules':
@@ -340,7 +372,8 @@ class Data extends Rule
 			case 'boolean':
 				if (!\Rose\isBool($value)) {
 					if ($opt) throw new IgnoreField();
-					throw new Error(Shield::getMessage('expected_boolean') . ': ' . $path);
+					$this->errors->set($path, Shield::getMessage('expected_boolean'));
+					throw new Error('');
 				}
 				$validate = true;
 				break;
@@ -348,7 +381,8 @@ class Data extends Rule
 			case 'integer':
 				if (!\Rose\isInteger($value)) {
 					if ($opt) throw new IgnoreField();
-					throw new Error(Shield::getMessage('expected_integer') . ': ' . $path);
+					$this->errors->set($path, Shield::getMessage('expected_integer'));
+					throw new Error('');
 				}
 				$validate = true;
 				break;
@@ -356,7 +390,8 @@ class Data extends Rule
 			case 'number':
 				if (!\Rose\isNumber($value)) {
 					if ($opt) throw new IgnoreField();
-					throw new Error(Shield::getMessage('expected_number') . ': ' . $path);
+					$this->errors->set($path, Shield::getMessage('expected_number'));
+					throw new Error('');
 				}
 				$validate = true;
 				break;
@@ -364,7 +399,8 @@ class Data extends Rule
 			case 'string':
 				if (!\Rose\isString($value)) {
 					if ($opt) throw new IgnoreField();
-					throw new Error(Shield::getMessage('expected_string') . ': ' . $path);
+					$this->errors->set($path, Shield::getMessage('expected_string'));
+					throw new Error('');
 				}
 				$validate = true;
 				break;
@@ -372,12 +408,14 @@ class Data extends Rule
 			case 'null':
 				if ($value !== null) {
 					if ($opt) throw new IgnoreField();
-					throw new Error(Shield::getMessage('expected_null') . ': ' . $path);
+					$this->errors->set($path, Shield::getMessage('expected_null'));
+					throw new Error('');
 				}
 				break;
 
 			default:
-				throw new Error(Shield::getMessage('unknown_descriptor') . ': ' . $node->get(0));
+				$this->errors->set($path, Shield::getMessage('unknown_descriptor') . ': ' . $node->get(0));
+				throw new Error('');
 		}
 
 		if ($validate && $node->length() > 1)
@@ -387,24 +425,32 @@ class Data extends Rule
 
 			Shield::validateValue ($node->get(1), $r_key, $r_key, $input, $output, $ctx, $errors);
 
-			if ($errors->has($r_key))
-				throw new Error($errors->get($r_key) . ': ' . $path);
+			if ($errors->has($r_key)) {
+				$this->errors->set($path, $errors->get($r_key));
+				throw new Error('');
+			}
 
 			if (!$output->has($r_key))
 				throw new IgnoreField();
 
 			$value = $output->get($r_key);
+			$output->remove($r_key);
+
+			$output->forEach(function($value, $key) use (&$root) {
+				$root->set($key, $value);
+			});
 
 			if ($node->get(1)[1] != '')
 				$r_key = $node->get(1)[1];
 		}
 
-		if ($err->length() != 0)
-			throw new Error ($err->join("\n"));
+		if ($this->errors->length() != 0)
+			throw new Error ('');
 	}
 
 	public function validate ($name, &$val, $input, $output, $context)
 	{
+		$this->errors->clear();
 		$this->checkType (self::flatten($this->value, $context), $val, $name, false, $context, $val, $input, $name);
 		return true;
 	}
@@ -420,6 +466,7 @@ Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 			type "text"
 		))
 	)
+
 	(shield::field input
 		json-load "POST"
 		data (object

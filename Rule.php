@@ -19,6 +19,7 @@ namespace Rose\Ext\Shield;
 
 use Rose\Expr;
 use Rose\Arry;
+use Rose\Map;
 use Rose\Text;
 
 /*
@@ -29,12 +30,14 @@ abstract class Rule
 {
 	protected $baseIdentifier;
 	protected $identifier;
+	protected $errors;
 
 	public function __construct ($value, $baseIdentifier=null)
 	{
 		$this->value = $value;
 		$this->baseIdentifier = $baseIdentifier;
 		$this->identifier = null;
+		$this->errors = new Map();
 	}
 
 	protected function valueIsString ()
@@ -48,6 +51,11 @@ abstract class Rule
 	}
 
 	public abstract function getName();
+
+	public function getErrors()
+	{
+		return $this->errors;
+	}
 
 	public function getIdentifier()
 	{
