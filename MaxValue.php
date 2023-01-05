@@ -30,7 +30,7 @@ class MaxValue extends Rule
 		return 'max-value';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		$this->identifier = $value;

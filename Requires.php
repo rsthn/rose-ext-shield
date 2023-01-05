@@ -30,7 +30,7 @@ class Requires extends Rule
 		return 'requires';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = Text::split('/', $this->getValue($context));
 		$this->identifier = $value->get(0);

@@ -29,7 +29,7 @@ class Required extends Rule
 		return 'required';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 

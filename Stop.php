@@ -29,7 +29,7 @@ class Stop extends Rule
 		return 'stop';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		if (\Rose\bool($this->getValue($context)))
 			throw new StopValidation();

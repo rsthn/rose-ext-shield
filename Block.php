@@ -29,7 +29,7 @@ class Block extends Rule
 		return 'block';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$this->getValue($context);
 		return true;

@@ -30,14 +30,12 @@ abstract class Rule
 {
 	protected $baseIdentifier;
 	protected $identifier;
-	protected $errors;
 
 	public function __construct ($value, $baseIdentifier=null)
 	{
 		$this->value = $value;
 		$this->baseIdentifier = $baseIdentifier;
 		$this->identifier = null;
-		$this->errors = new Map();
 	}
 
 	protected function valueIsString ()
@@ -52,16 +50,11 @@ abstract class Rule
 
 	public abstract function getName();
 
-	public function getErrors()
-	{
-		return $this->errors;
-	}
-
 	public function getIdentifier()
 	{
 		$val = $this->baseIdentifier ? $this->baseIdentifier : $this->identifier;
 		return $val ? (\Rose\isString($val) && $val[0] == '@' ? Text::substring($val, 1) : $this->getName() . ':' . $val) : $this->getName();
 	}
 
-	public abstract function validate ($name, &$value, $input, $output, $context);
+	public abstract function validate ($name, &$value, $input, $output, $context, $errors);
 };

@@ -29,7 +29,7 @@ class Presence extends Rule
 		return 'presence';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		if ($value === true) $value = 'true';

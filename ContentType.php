@@ -16,7 +16,7 @@ class ContentType extends Rule
 		return 'content-type';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = Text::toLowerCase($this->getValue($context));
 

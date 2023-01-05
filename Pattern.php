@@ -33,7 +33,7 @@ class Pattern extends Rule
 		return 'pattern';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')

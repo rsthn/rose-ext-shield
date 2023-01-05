@@ -29,7 +29,7 @@ class Default_ extends Rule
 		return 'default';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		if (\Rose\isString($val))
 			$val = Text::trim($val);

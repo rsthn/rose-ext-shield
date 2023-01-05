@@ -29,7 +29,7 @@ class Set extends Rule
 		return 'set';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$val = $this->getValue($context);
 		return true;

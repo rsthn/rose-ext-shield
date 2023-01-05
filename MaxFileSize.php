@@ -30,7 +30,7 @@ class MaxFileSize extends Rule
 		return 'max-file-size';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		$this->identifier = $value;

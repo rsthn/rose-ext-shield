@@ -29,7 +29,7 @@ class DefaultStop extends Rule
 		return 'default-stop';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		if (\Rose\isString($val))
 			$val = Text::trim($val);

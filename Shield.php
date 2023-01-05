@@ -176,8 +176,10 @@ class Shield
 			$output->set('_selfValue', $output->__nativeArray[$output_name]);
 			$context->set('$', $output->__nativeArray[$output_name]);
 
+			$_errors = new Map();
+
 			try {
-				if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context))
+				if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context, $_errors))
 					continue;
 			}
 			catch (StopValidation $e) {
@@ -191,7 +193,7 @@ class Shield
 			{
 				$tmp = $rule->getIdentifier();
 				if (!$tmp)
-					$errors->merge($rule->getErrors(), true);
+					$errors->merge($_errors, true);
 				else
 					$errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
 

@@ -29,7 +29,7 @@ class Ignore extends Rule
 		return 'ignore';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		if (\Rose\bool($this->getValue($context)))
 			throw new IgnoreField();

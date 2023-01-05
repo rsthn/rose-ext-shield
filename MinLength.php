@@ -30,7 +30,7 @@ class MinLength extends Rule
 		return 'min-length';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = (int)$this->getValue($context);
 		$this->identifier = $value;

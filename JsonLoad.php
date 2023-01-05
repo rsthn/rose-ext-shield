@@ -19,7 +19,7 @@ class JsonLoad extends Rule
 		return 'json-load';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		if ($value === 'POST')

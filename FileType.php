@@ -30,7 +30,7 @@ class FileType extends Rule
 		return 'file-type';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
 		$this->identifier = $value;

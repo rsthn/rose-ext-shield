@@ -29,7 +29,7 @@ class Check extends Rule
 		return 'check';
 	}
 
-	public function validate ($name, &$val, $input, $output, $context)
+	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		return \Rose\bool($this->getValue($context));
 	}
