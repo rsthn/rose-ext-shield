@@ -220,6 +220,9 @@ class Data extends Rule
 		switch ($node->first())
 		{
 			case 'object':
+				if (\Rose\typeOf($value, true) === 'Rose\\Arry' && $value->length() == 0)
+					$value = new Map();
+
 				if (\Rose\typeOf($value, true) !== 'Rose\\Map')
 				{
 					$errors->set($path, Shield::getMessage('expected_object'));
