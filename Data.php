@@ -394,7 +394,7 @@ class Data extends Rule
 				break;
 
 			case 'number':
-				if (!\Rose\isNumber($value)) {
+				if (!\Rose\isNumber($value) && !\Rose\isInteger($value)) {
 					if ($opt) throw new IgnoreField();
 					$errors->set($path, Shield::getMessage('expected_number'));
 					throw new Error('');
