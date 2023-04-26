@@ -154,7 +154,7 @@ class Shield
 		{
 			$name = $desc;
 			$desc = self::$fields->get($desc);
-			if (!$desc) throw new ArgumentError ('(shield::validate) Undefined validation descriptor: '.$name);
+			if (!$desc) throw new ArgumentError ('Undefined validation descriptor: '.$name);
 		}
 
 		$_out = $context->get('$out');
@@ -430,3 +430,4 @@ class_exists('Rose\Ext\Shield\JsonLoad');
 class_exists('Rose\Ext\Shield\Cast');
 class_exists('Rose\Ext\Shield\Expect');
 class_exists('Rose\Ext\Shield\Block');
+class_exists('Rose\Ext\Shield\Type');
