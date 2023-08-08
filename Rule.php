@@ -30,6 +30,7 @@ abstract class Rule
 {
 	protected $baseIdentifier;
 	protected $identifier;
+	protected $value;
 
 	public function __construct ($value, $baseIdentifier=null)
 	{
