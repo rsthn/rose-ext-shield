@@ -352,9 +352,9 @@ Expr::register('shield::validate', function($args, $parts, $data)
 **	Runs a validation sequence on a specified data map, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated
 **	fields will be available in the global context if validation succeeded.
 **
-**	shield::validateData <inputData> <targetName> <...field>
+**	shield::validate-data <inputData> <targetName> <...field>
 */
-Expr::register('shield::validateData', function($args, $parts, $data)
+Expr::register('shield::validate-data', function($args, $parts, $data)
 {
 	$inputData = $args->get(1);
 	$outputData = $data;

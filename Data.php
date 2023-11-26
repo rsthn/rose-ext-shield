@@ -498,6 +498,10 @@ Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 				some_value (number default 25.5)
 				some_value (string max-length 10)
 				some_value (null)
+				some_value (rules
+                    required true
+                    pattern integer
+                )
 			)
 	)
 

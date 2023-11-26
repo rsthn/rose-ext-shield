@@ -22,11 +22,9 @@ class JsonLoad extends Rule
 	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
-		if ($value === 'POST')
-		{
+		if ($value === 'POST') {
 			if (Gateway::getInstance()->input->contentType != 'application/json')
 				return false;
-
 			$val = Gateway::getInstance()->input->data;
 		}
 		else
