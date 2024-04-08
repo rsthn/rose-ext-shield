@@ -235,28 +235,28 @@ class Shield
 
 /**
 **	Returns a field validation descriptor.
-**	shield::field <name> <...rules>
+**	shield:field <name> <...rules>
 */
-Expr::register('_shield::field', function($parts, $data)
+Expr::register('_shield:field', function($parts, $data)
 {
 	$name = Expr::value($parts->get(1), $data);
 
 	if (!\Rose\isString($name))
-		throw new ArgumentError ('shield::field expects \'name\' parameter to be a string.');
+		throw new ArgumentError ('shield:field expects \'name\' parameter to be a string.');
 
 	return Shield::getDescriptor($name, Shield::parseDescriptor($parts, $data, 2), $data);
 });
 
 /**
 **	Registers a type validation descriptor.
-**	shield::type <name> <...rules>
+**	shield:type <name> <...rules>
 */
-Expr::register('_shield::type', function($parts, $data)
+Expr::register('_shield:type', function($parts, $data)
 {
 	$name = Expr::value($parts->get(1), $data);
 
 	if (!\Rose\isString($name))
-		throw new ArgumentError ('shield::type expects \'name\' parameter to be a string.');
+		throw new ArgumentError ('shield:type expects \'name\' parameter to be a string.');
 
 	$rules = new Arry();
 
@@ -279,11 +279,11 @@ Expr::register('_shield::type', function($parts, $data)
 });
 
 /**
-**	Begins quiet validation mode. All validation errors will be accumulated, and can later be retrieved by calling `shield::end`.
+**	Begins quiet validation mode. All validation errors will be accumulated, and can later be retrieved by calling `shield:end`.
 **
-**	shield::begin
+**	shield:begin
 */
-Expr::register('shield::begin', function($args, $parts, $data)
+Expr::register('shield:begin', function($args, $parts, $data)
 {
 	Shield::$errors = new Map();
 });
@@ -292,9 +292,9 @@ Expr::register('shield::begin', function($args, $parts, $data)
 **	Ends quiet validation mode. If there are any errors and `automatic` is set to `true` (default), then Wind::R_VALIDATION_ERROR will be thrown,
 **	otherwise, the error map will just be returned.
 **
-**	shield::end [automatic:bool=true]
+**	shield:end [automatic:bool=true]
 */
-Expr::register('shield::end', function($args, $parts, $data)
+Expr::register('shield:end', function($args, $parts, $data)
 {
 	$err = Shield::$errors;
 	Shield::$errors = null;
@@ -312,11 +312,11 @@ Expr::register('shield::end', function($args, $parts, $data)
 **	Runs a validation sequence, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated fields will be
 **	available in the global context if validation succeeded.
 **
-**	shield::validate <targetName> <...field>
+**	shield:validate <targetName> <...field>
 */
-Expr::register('shield::validate', function($args, $parts, $data)
+Expr::register('shield:validate', function($args, $parts, $data)
 {
-	$inputData = Gateway::getInstance()->requestParams;
+	$inputData = Gateway::getInstance()->request;
 	$outputData = $data;
 	$errors = Shield::$errors != null ? Shield::$errors : new Map();
 
@@ -352,9 +352,9 @@ Expr::register('shield::validate', function($args, $parts, $data)
 **	Runs a validation sequence on a specified data map, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated
 **	fields will be available in the global context if validation succeeded.
 **
-**	shield::validate-data <inputData> <targetName> <...field>
+**	shield:validate-data <inputData> <targetName> <...field>
 */
-Expr::register('shield::validate-data', function($args, $parts, $data)
+Expr::register('shield:validate-data', function($args, $parts, $data)
 {
 	$inputData = $args->get(1);
 	$outputData = $data;
