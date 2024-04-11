@@ -11,6 +11,7 @@ use Rose\IO\File;
 use Rose\Errors\Error;
 use Rose\Expr;
 use Rose\Arry;
+use Rose\JSON;
 
 class JsonLoad extends Rule
 {
@@ -22,13 +23,13 @@ class JsonLoad extends Rule
 	public function validate ($name, &$val, $input, $output, $context, $errors)
 	{
 		$value = $this->getValue($context);
-		if ($value === 'POST') {
-			if (Gateway::getInstance()->input->contentType != 'application/json')
+		if ($value === 'POST' || $value === 'body') {
+			if (Gateway::getInstance()->input->contentType !== 'application/json')
 				return false;
-			$val = Gateway::getInstance()->input->data;
+			$val = Gateway::getInstance()->body;
 		}
 		else
-			$val = Expr::call('utils::json::parse', new Arry ([null, $value]));
+			$val = JSON::parse($value);
 
 		if (!$val) return false;
 		return true;

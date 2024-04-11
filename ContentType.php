@@ -20,7 +20,7 @@ class ContentType extends Rule
 	{
 		$value = Text::toLowerCase($this->getValue($context));
 
-		if (Gateway::getInstance()->input->contentType != $value)
+		if (Gateway::getInstance()->input->contentType !== $value)
 			return false;
 
 		$val = Gateway::getInstance()->input->data;
