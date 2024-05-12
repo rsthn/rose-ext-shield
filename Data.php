@@ -468,7 +468,7 @@ class Data extends Rule
 Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 
 /*
-	(shield::type my_rule
+	(shield:type my_rule
 		required true
 		data (array (object
 			count "integer"
@@ -476,7 +476,7 @@ Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 		))
 	)
 
-	(shield::field input
+	(shield:field input
 		json-load "POST"
 		data (object
 				id "integer"

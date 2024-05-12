@@ -392,6 +392,7 @@ Expr::register('shield:validate-data', function($args, $parts, $data)
 
 /**
  * Validates the body of the request.
+ * @code (`shield:validate-body` [output='body'] <json-rules...>)
  */
 Expr::register('_shield:validate-body', function($parts, $data)
 {
@@ -402,20 +403,19 @@ Expr::register('_shield:validate-body', function($parts, $data)
     $desc = Shield::parseDescriptor($parts, $data, $index-1);
     $desc->get(0)->set(0, 'data');
     $desc->unshift(new Arry(["json-load", [[ "type" => "string", "data" => "body" ]]]));
-    $desc = Shield::getDescriptor($name, $desc, $data);
+    $desc = Shield::getDescriptor('', $desc, $data);
 
     $inputData = Gateway::getInstance()->request;
     $outputData = new Map();
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
     $data->set('formData', $outputData);
-
-        Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
+    Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
 
     if ($errors !== Shield::$errors && $errors->length != 0)
         throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
     $data->remove('formData');
-    $data->set($name, $outputData->get($name));
+    $data->set($name, $outputData->get(''));
     return null;
 });
 
