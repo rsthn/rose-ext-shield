@@ -228,7 +228,10 @@ class Shield
 
 /**
  * Returns a field validation descriptor.
- * @code (`shield:field` <field-name> <rules...>)
+ * @code (`shield:field` <output-name> [rules...])
+ * @example
+ * (shield:field 'username' required true)
+ * ; (descriptor)
  */
 Expr::register('_shield:field', function($parts, $data)
 {
@@ -239,6 +242,16 @@ Expr::register('_shield:field', function($parts, $data)
 
     return Shield::getDescriptor($name, Shield::parseDescriptor($parts, $data, 2), $data);
 });
+
+
+/**
+ * Creates a new validation model and returns the descriptor.
+ * @code (`shield:model` <fields...>)
+ */
+Expr::register('shield:model', function($args, $parts, $data) {
+    return new Map([ 'model' => uniqid('model-'), 'fields' => $args->slice(1) ]);
+});
+
 
 /**
  * Registers a type validation descriptor.
@@ -294,15 +307,15 @@ Expr::register('shield:end', function($args, $parts, $data)
         return $err;
 
     if ($err->length != 0)
-        throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $err ]);
+        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $err ]);
 
     return null;
 });
 
 /**
- * Runs a validation sequence, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated fields will be available in the
- * global context if validation succeeded.
- * @code (`shield:validate` <targetName> <...field>)
+ * Validates the fields in the gateway request. Any error will be reported, and the validated object will be available in the
+ * global context or in the output variable (if provided) when validation succeeds.
+ * @code (`shield:validate` [output-var] <fields...>)
  */
 Expr::register('shield:validate', function($args, $parts, $data)
 {
@@ -332,16 +345,16 @@ Expr::register('shield:validate', function($args, $parts, $data)
         Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
 
     if ($errors !== Shield::$errors && $errors->length != 0)
-        throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
     $data->remove('formData');
     return null;
 });
 
 /**
- * Runs a validation sequence on a specified data map, if any error occurs replies Wind::R_VALIDATION_ERROR. The validated fields will
- * be available in the global context if validation succeeded.
- * @code (`shield:validate-data` <inputData> <targetName> <...field>)
+ * Validates the fields in the specified object. Any errors will be reported, and the validated object will be available in the
+ * global context or in the output variable (if provided) when validation succeeds.
+ * @code (`shield:validate-data` <input-data> [output-var] <fields...>)
  */
 Expr::register('shield:validate-data', function($args, $parts, $data)
 {
@@ -371,7 +384,7 @@ Expr::register('shield:validate-data', function($args, $parts, $data)
         Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
 
     if ($errors !== Shield::$errors && $errors->length != 0)
-        throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
     $data->remove('formData');
     return $outputData;
@@ -382,7 +395,7 @@ Expr::register('shield:validate-data', function($args, $parts, $data)
  */
 Expr::register('_shield:validate-body', function($parts, $data)
 {
-	$name = 'body';
+    $name = 'body';
     $index = 1;
     Expr::takeIdentifier($parts, $data, $index, $name);
 
@@ -399,11 +412,37 @@ Expr::register('_shield:validate-body', function($parts, $data)
         Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
 
     if ($errors !== Shield::$errors && $errors->length != 0)
-        throw new WindError([ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
 
     $data->remove('formData');
     $data->set($name, $outputData->get($name));
     return null;
+});
+
+
+/**
+ * Validates the fields in the input object using the specified model. If any validation error occurs an exception will be thrown,
+ * if the data is successfully validated, the validated object will be returned.
+ * @code (`shield:validate-model` <model-obj> <input-data>)
+ */
+Expr::register('shield:validate-model', function($args, $parts, $data)
+{
+    $model = $args->get(1);
+    $inputData = $args->get(2);
+    $outputData = new Map();
+    $errors = new Map();
+
+    $data->set('formData', $outputData);
+
+    $n = $model->fields->length();
+    for ($i = 0; $i < $n; $i++)
+        Shield::validateValue ($model->fields->get($i), null, null, $inputData, $outputData, $data, $errors);
+
+    if ($errors->length != 0)
+        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+
+    $data->remove('formData');
+    return $outputData;
 });
 
 /* ****************************************************************************** */
