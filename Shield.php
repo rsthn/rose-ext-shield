@@ -411,8 +411,12 @@ Expr::register('_shield:validate-body', function($parts, $data)
     $data->set('formData', $outputData);
     Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
 
-    if ($errors !== Shield::$errors && $errors->length != 0)
-        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+    if ($errors !== Shield::$errors && $errors->length != 0) {
+        if ($errors->has(''))
+            throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get('') ]);
+        else
+            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+    }
 
     $data->remove('formData');
     $data->set($name, $outputData->get(''));
