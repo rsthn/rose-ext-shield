@@ -19,7 +19,6 @@ class CaseEnd extends Rule
 	}
 
     public function failed ($input, $output, $context, $errors) {
-        die('xxxxxxxx');
     }
 };
 
