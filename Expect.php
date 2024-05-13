@@ -22,16 +22,16 @@ class Expect extends Rule
 
 		switch ($value)
 		{
-			case 'boolean':
+			case 'boolean': case 'bool':
 				return \Rose\isBool($val);
 
-			case 'integer':
+			case 'integer': case 'int':
 				return \Rose\isInteger($val);
 
 			case 'number':
 				return \Rose\isNumber($val);
 
-			case 'string':
+			case 'string': case 'str':
 				return \Rose\isString($val);
 
 			case 'null':

@@ -9,24 +9,23 @@ use Rose\Text;
 
 class DefaultStop extends Rule
 {
-	public function getName ()
-	{
-		return 'default-stop';
-	}
+    public function getName ()
+    {
+        return 'default-stop';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		if (\Rose\isString($val))
-			$val = Text::trim($val);
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        if (\Rose\isString($val))
+            $val = Text::trim($val);
 
-		if (!$input->has($name) || (\Rose\isString($val) && Text::length($val) == 0))
-		{
-			$val = $this->getValue($context);
-			throw new StopValidation();
-		}
+        if (!$input->has($name) || (\Rose\isString($val) && Text::length($val) == 0)) {
+            $val = $this->getValue($context);
+            throw new StopValidation();
+        }
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('default-stop', 'Rose\Ext\Shield\DefaultStop');

@@ -6,8 +6,8 @@ use Rose\Errors\Error;
 
 class StopValidation extends Error
 {
-	public function __construct ($message=null)
-	{
+    public function __construct ($message=null)
+    {
         parent::__construct ($message);
     }
 };

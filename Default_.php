@@ -9,21 +9,21 @@ use Rose\Text;
 
 class Default_ extends Rule
 {
-	public function getName ()
-	{
-		return 'default';
-	}
+    public function getName ()
+    {
+        return 'default';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		if (\Rose\isString($val))
-			$val = Text::trim($val);
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        if (\Rose\isString($val))
+            $val = Text::trim($val);
 
-		if (!$input->has($name) || (\Rose\isString($val) && Text::length($val) == 0))
-			$val = $this->getValue($context);
+        if (!$input->has($name) || (\Rose\isString($val) && Text::length($val) == 0))
+            $val = $this->getValue($context);
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('default', 'Rose\Ext\Shield\Default_');

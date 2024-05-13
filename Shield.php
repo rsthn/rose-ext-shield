@@ -17,6 +17,7 @@ use Rose\Map;
 use Rose\Arry;
 
 use Rose\Ext\Shield\StopValidation;
+use Rose\Ext\Shield\CondValidation;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Wind;
 use Rose\Ext\Wind\WindError;
@@ -70,7 +71,6 @@ class Shield
     public static function getDescriptor (string $name, \Rose\Arry $rules, \Rose\Map $data)
     {
         $output_rules = [];
-
         $input_name = $name;
         $output_name = $name;
 
@@ -79,14 +79,12 @@ class Shield
             $key = $value->get(0);
             $value = $value->get(1);
 
-            if ($key == 'input')
-            {
+            if ($key === 'input') {
                 $input_name = Expr::value($value, $data);
                 return;
             }
 
-            if ($key == 'output')
-            {
+            if ($key === 'output') {
                 $output_name = Expr::value($value, $data);
                 return;
             }
@@ -149,16 +147,37 @@ class Shield
         $output->set('_selfName', $output_name);
         $remove = false;
 
+        $allowedMap = null;
+        $unallowedMap = null;
+
         foreach ($desc[2] as $rule)
         {
+            if ($unallowedMap === true)
+            {
+                if (!$allowedMap->has($rule->getName()))
+                    continue;
+                $allowedMap = $unallowedMap = null;
+            }
+
             $output->set('_selfValue', $output->__nativeArray[$output_name]);
             $context->set('$', $output->__nativeArray[$output_name]);
 
             $_errors = new Map();
 
             try {
+                if ($allowedMap === true && $unallowedMap->has($rule->getName())) {
+                    $rule->failed($input, $output, $context, $_errors);
+                    $allowedMap = $unallowedMap = null;
+                    continue;
+                }
+
                 if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context, $_errors))
                     continue;
+            }
+            catch (CondValidation $e) {
+                $allowedMap = $e->allowedMap;
+                $unallowedMap = $e->unallowedMap;
+                continue;
             }
             catch (StopValidation $e) {
                 break;
@@ -211,14 +230,21 @@ class Shield
         for (; $i < $parts->length(); $i += 2)
         {
             $key = Expr::value($parts->get($i), $data);
-            if (substr($key, -1) == ':')
+            if (substr($key, -1) === ':') // TODO: Deprecate using ':' to separate rule name and value
                 $key = substr($key, 0, strlen($key)-1);
 
+            // TODO: Register no-value rules somewhere
+            if ($key === 'case-else' || $key === 'case-end') {
+                $rules->push(new Arry ([$key, null], false));
+                $i--;
+                continue;
+            }
+
             $tmp = $parts->get($i+1);
-    
-            if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
+
+            if ($tmp->length == 1 && ($tmp->get(0)->type !== 'template' && $tmp->get(0)->type !== 'string'))
                 $tmp = Expr::value($tmp, $data);
-                
+
             $rules->push(new Arry ([$key, $tmp], false));
         }
 
@@ -269,12 +295,12 @@ Expr::register('_shield:type', function($parts, $data)
     for ($i = 2; $i < $parts->length(); $i += 2)
     {
         $key = Expr::value($parts->get($i), $data);
-        if (substr($key, -1) == ':')
+        if (substr($key, -1) === ':') // TODO: Deprecate using ':' to separate rule name and value
             $key = substr($key, 0, strlen($key)-1);
 
         $tmp = $parts->get($i+1);
 
-        if ($tmp->length == 1 && ($tmp->get(0)->type != 'template' && $tmp->get(0)->type != 'string'))
+        if ($tmp->length == 1 && ($tmp->get(0)->type !== 'template' && $tmp->get(0)->type !== 'string'))
             $tmp = Expr::value($tmp, $data);
             
         $rules->push(new Arry ([$key, $tmp], false));
@@ -365,7 +391,7 @@ Expr::register('shield:validate-data', function($args, $parts, $data)
     $i = $args->get(2);
     if (Shield::$fields->get($i) == null)
     {
-        if ($i != 'global')
+        if ($i !== 'global')
         {
             if ($data->has($i))
                 $outputData = $data->get($i);
@@ -477,3 +503,6 @@ class_exists('Rose\Ext\Shield\Cast');
 class_exists('Rose\Ext\Shield\Expect');
 class_exists('Rose\Ext\Shield\Block');
 class_exists('Rose\Ext\Shield\Type');
+class_exists('Rose\Ext\Shield\CaseWhen');
+class_exists('Rose\Ext\Shield\CaseElse');
+class_exists('Rose\Ext\Shield\CaseEnd');

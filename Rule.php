@@ -43,4 +43,7 @@ abstract class Rule
 	}
 
 	public abstract function validate ($name, &$value, $input, $output, $context, $errors);
+
+    public function failed ($input, $output, $context, $errors)
+    { }
 };
