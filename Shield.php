@@ -480,13 +480,18 @@ Expr::register('_shield:validate-data', function($parts, $data)
     $name = Expr::value($parts->get(1), $data);
     $inputData = new Map([ '' => Expr::value($parts->get(2), $data) ]);
 
-    if ($parts->length() === 4) {
-        $model = Expr::value($parts->get(3), $data);
-        if (!($model instanceof ValidationModel))
-            throw new ArgumentError ('shield:validate-data expects a ValidationModel object');
-        $desc = $model->descriptor;
+    if (Expr::isIdentifier($parts, 3, 'using')) {
+        $desc = [];
+        $multi = true;
+        for ($i = 4; $i < $parts->length(); $i++) {
+            $model = Expr::value($parts->get($i), $data);
+            if (!($model instanceof ValidationModel))
+                throw new ArgumentError ('shield:validate-data expects a ValidationModel object');
+            $desc[] = $model->descriptor;
+        }
     }
     else {
+        $multi = false;
         $parts->set(2, 'data');
         $desc = Shield::getDescriptor('', Shield::parseDescriptor($parts, $data, 2), $data);
     }
@@ -494,7 +499,21 @@ Expr::register('_shield:validate-data', function($parts, $data)
     $outputData = new Map();
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
     $data->set('formData', $outputData);
-    Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
+
+    if ($multi === true) {
+        $output = null;
+        foreach ($desc as $_desc) {
+            Shield::validateValue ($_desc, null, null, $inputData, $outputData, $data, $errors);
+            if ($output === null)
+                $output = $outputData->get('');
+            else
+                $output->merge($outputData->get(''), true);
+        }
+    }
+    else {
+        Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
+        $output = $outputData->get('');
+    }
 
     if ($errors !== Shield::$errors && $errors->length != 0) {
         if ($errors->has(''))
@@ -504,7 +523,7 @@ Expr::register('_shield:validate-data', function($parts, $data)
     }
 
     $data->remove('formData');
-    $data->set($name, $outputData->get(''));
+    $data->set($name, $output);
     return null;
 });
 
