@@ -36,6 +36,10 @@ abstract class Rule
 
 	public abstract function getName();
 
+    public function __toString() {
+        return $this->getName();
+    }
+
 	public function getIdentifier()
 	{
 		$val = $this->baseIdentifier ? $this->baseIdentifier : $this->identifier;

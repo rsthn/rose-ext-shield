@@ -22,6 +22,21 @@ use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Wind;
 use Rose\Ext\Wind\WindError;
 
+// @title Shield
+
+class ValidationModel
+{
+    public $descriptor;
+    public $id;
+    public function __construct ($descriptor) {
+        $this->id = uniqid('model_');
+        $this->descriptor = $descriptor;
+    }
+    public function __toString() {
+        return $this->id;
+    }
+}
+
 class Shield
 {
     /**
@@ -106,7 +121,7 @@ class Shield
     }
 
     /**
-     * Registers a field validation descriptor.
+     * Registers a field descriptor.
      */
     public static function registerDescriptor (string $name, array $desc)
     {
@@ -253,10 +268,55 @@ class Shield
 };
 
 /**
- * Returns a field validation descriptor.
+ * Ensures the request was made using the specified method(s) or fails with 405/@messages.method_not_allowed.
+ * @code (`shield:method-required` <method...>)
+ */
+Expr::register('shield:method-required', function($args, $parts, $data) {
+    $method = Gateway::getInstance()->method;
+    for ($i = 1; $i < $args->length; $i++) {
+        if ($method === Text::toUpperCase($args->get($i)))
+            return true;
+    }
+
+    throw new WindError('MethodNotAllowed', [
+        'response' => 405, 
+        'error' => Strings::get('@messages.method_not_allowed'),
+        'expected' => $args->slice(1)
+    ]);
+});
+
+/**
+ * Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
+ * request body, or with 422/@messages.invalid_content_type if the content-type is not valid.
+ * @code (`shield:body-required` <content-type...>)
+ */
+Expr::register('shield:body-required', function($args, $parts, $data) {
+    $content_type = Gateway::getInstance()->input->contentType;
+    if ($content_type === null)
+        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+
+    for ($i = 1; $i < $args->length; $i++) {
+        if ($content_type === $args->get($i))
+            return true;
+    }
+
+    throw new WindError('InvalidContentType', [
+        'response' => 422, 
+        'error' => Strings::get('@messages.invalid_content_type'),
+        'expected' => $args->slice(1)
+    ]);
+});
+
+
+/**
+ * Returns a field descriptor.
  * @code (`shield:field` <output-name> [rules...])
  * @example
- * (shield:field 'username' required true)
+ * (shield:field username
+ *      required true
+ *      min-length 3
+ *      max-length 20
+ * )
  * ; (descriptor)
  */
 Expr::register('_shield:field', function($parts, $data)
@@ -271,17 +331,13 @@ Expr::register('_shield:field', function($parts, $data)
 
 
 /**
- * Creates a new validation model and returns the descriptor.
- * @code (`shield:model` <fields...>)
- */
-Expr::register('shield:model', function($args, $parts, $data) {
-    return new Map([ 'model' => uniqid('model-'), 'fields' => $args->slice(1) ]);
-});
-
-
-/**
- * Registers a type validation descriptor.
+ * Registers a type validation descriptor to be used by name in the `type` rules.
  * @code (`shield:type` <type-name> <rules...>)
+ * @example
+ * (shield:type "email"
+ *   max-length 256
+ *   pattern email
+ * )
  */
 Expr::register('_shield:type', function($parts, $data)
 {
@@ -311,11 +367,11 @@ Expr::register('_shield:type', function($parts, $data)
 });
 
 /**
- * Begins quiet validation mode. All validation errors will be accumulated, and can later be retrieved by calling `shield:end`.
+ * Begins quiet validation mode. All validation errors will be accumulated, and should later be retrieved by calling `shield:end`,
+ * this is useful to batch multiple validation blocks at once.
  * @code (`shield:begin`)
  */
-Expr::register('shield:begin', function($args, $parts, $data)
-{
+Expr::register('shield:begin', function($args, $parts, $data) {
     Shield::$errors = new Map();
 });
 
@@ -341,7 +397,19 @@ Expr::register('shield:end', function($args, $parts, $data)
 /**
  * Validates the fields in the gateway request. Any error will be reported, and the validated object will be available in the
  * global context or in the output variable (if provided) when validation succeeds.
- * @code (`shield:validate` [output-var] <fields...>)
+ * NOTE: This is a legacy function, use the replacement `shield:validate-data` when possible.
+ * @code (`shield:validate` [output-var] <field-descriptors...>)
+ * @example
+ * (shield:validate form
+ *   (shield:field name
+ *     required true
+ *     max-length 8
+ *   )
+ *   (shield:field email
+ *    required true
+ *    pattern email
+ *   )
+ * )
  */
 Expr::register('shield:validate', function($args, $parts, $data)
 {
@@ -378,60 +446,51 @@ Expr::register('shield:validate', function($args, $parts, $data)
 });
 
 /**
- * Validates the fields in the specified object. Any errors will be reported, and the validated object will be available in the
- * global context or in the output variable (if provided) when validation succeeds.
- * @code (`shield:validate-data` <input-data> [output-var] <fields...>)
+ * Creates and returns a new validation model to be re-used later with `shield:validate-data`.
+ * @code (`shield:model` <data-descriptors...>)
+ * @example
+ * (shield:model
+ *    (object
+ *       "username" (string)
+ *       "password" (string)
+ *       "email" (rules
+ *           required true
+ *           pattern email
+ *        )
+ *    )
+ * )
+ * ; model_45ef12
  */
-Expr::register('shield:validate-data', function($args, $parts, $data)
+Expr::register('_shield:model', function($parts, $data)
 {
-    $inputData = $args->get(1);
-    $outputData = $data;
-    $errors = Shield::$errors != null ? Shield::$errors : new Map();
-
-    $i = $args->get(2);
-    if (Shield::$fields->get($i) == null)
-    {
-        if ($i !== 'global')
-        {
-            if ($data->has($i))
-                $outputData = $data->get($i);
-            else
-                $data->set($i, $outputData = new Map());
-        }
-
-        $i = 3;
-    }
-    else
-        $i = 2;
-
-    $data->set('formData', $outputData);
-
-    for (; $i < $args->length; $i++)
-        Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
-
-    if ($errors !== Shield::$errors && $errors->length != 0)
-        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
-
-    $data->remove('formData');
-    return $outputData;
+    $parts->set(0, 'data');
+    $desc = Shield::parseDescriptor($parts, $data, 0);
+    $desc = Shield::getDescriptor('', $desc, $data);
+    return new ValidationModel($desc);
 });
 
+
 /**
- * Validates the body of the request.
- * @code (`shield:validate-body` [output='body'] <json-rules...>)
+ * Validates the fields in the input data using the specified data rules. If any validation error occurs an
+ * exception will be thrown. If the data is successfully validated it will be available in the output variable.
+ * @code (`shield:validate-data` <output-var> <input-object> <model|data-descriptors...>)
  */
-Expr::register('_shield:validate-body', function($parts, $data)
+Expr::register('_shield:validate-data', function($parts, $data)
 {
-    $name = 'body';
-    $index = 1;
-    Expr::takeIdentifier($parts, $data, $index, $name);
+    $name = Expr::value($parts->get(1), $data);
+    $inputData = new Map([ '' => Expr::value($parts->get(2), $data) ]);
 
-    $desc = Shield::parseDescriptor($parts, $data, $index-1);
-    $desc->get(0)->set(0, 'data');
-    $desc->unshift(new Arry(["json-load", [[ "type" => "string", "data" => "body" ]]]));
-    $desc = Shield::getDescriptor('', $desc, $data);
+    if ($parts->length() === 4) {
+        $model = Expr::value($parts->get(3), $data);
+        if (!($model instanceof ValidationModel))
+            throw new ArgumentError ('shield:validate-data expects a ValidationModel object');
+        $desc = $model->descriptor;
+    }
+    else {
+        $parts->set(2, 'data');
+        $desc = Shield::getDescriptor('', Shield::parseDescriptor($parts, $data, 2), $data);
+    }
 
-    $inputData = Gateway::getInstance()->request;
     $outputData = new Map();
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
     $data->set('formData', $outputData);
@@ -449,31 +508,6 @@ Expr::register('_shield:validate-body', function($parts, $data)
     return null;
 });
 
-
-/**
- * Validates the fields in the input object using the specified model. If any validation error occurs an exception will be thrown,
- * if the data is successfully validated, the validated object will be returned.
- * @code (`shield:validate-model` <model-obj> <input-data>)
- */
-Expr::register('shield:validate-model', function($args, $parts, $data)
-{
-    $model = $args->get(1);
-    $inputData = $args->get(2);
-    $outputData = new Map();
-    $errors = new Map();
-
-    $data->set('formData', $outputData);
-
-    $n = $model->fields->length();
-    for ($i = 0; $i < $n; $i++)
-        Shield::validateValue ($model->fields->get($i), null, null, $inputData, $outputData, $data, $errors);
-
-    if ($errors->length != 0)
-        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
-
-    $data->remove('formData');
-    return $outputData;
-});
 
 /* ****************************************************************************** */
 Shield::init();
@@ -500,9 +534,11 @@ class_exists('Rose\Ext\Shield\Data');
 class_exists('Rose\Ext\Shield\ContentType');
 class_exists('Rose\Ext\Shield\JsonLoad');
 class_exists('Rose\Ext\Shield\Cast');
-class_exists('Rose\Ext\Shield\Expect');
+class_exists('Rose\Ext\Shield\Expected');
 class_exists('Rose\Ext\Shield\Block');
 class_exists('Rose\Ext\Shield\Type');
 class_exists('Rose\Ext\Shield\CaseWhen');
 class_exists('Rose\Ext\Shield\CaseElse');
 class_exists('Rose\Ext\Shield\CaseEnd');
+class_exists('Rose\Ext\Shield\MinItems');
+class_exists('Rose\Ext\Shield\MaxItems');

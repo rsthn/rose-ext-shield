@@ -8,11 +8,11 @@ use Rose\Ext\Shield;
 use Rose\Errors\Error;
 use Rose\Text;
 
-class Expect extends Rule
+class Expected extends Rule
 {
 	public function getName ()
 	{
-		return 'expect';
+		return 'expected';
 	}
 
 	public function validate ($name, &$val, $input, $output, $context, $errors)
@@ -34,6 +34,12 @@ class Expect extends Rule
 			case 'string': case 'str':
 				return \Rose\isString($val);
 
+            case 'array':
+                return \Rose\typeOf($val) === 'Rose\Arry';
+
+            case 'object':
+                return \Rose\typeOf($val) === 'Rose\Map';
+
 			case 'null':
 				return $val === null;
 
@@ -45,4 +51,4 @@ class Expect extends Rule
 	}
 };
 
-Shield::registerRule('expect', 'Rose\Ext\Shield\Expect');
+Shield::registerRule('expected', 'Rose\Ext\Shield\Expected');
