@@ -6,6 +6,8 @@ use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield;
 use Rose\Text;
+use Rose\Arry;
+use Rose\Map;
 
 class Cast extends Rule
 {
@@ -21,11 +23,11 @@ class Cast extends Rule
 
 		switch ($value)
 		{
-			case 'boolean':
+			case 'boolean': case 'bool':
 				$val = \Rose\bool($val);
 				break;
 
-			case 'integer':
+			case 'integer': case 'int':
 				$val = (int)$val;
 				break;
 
@@ -33,9 +35,21 @@ class Cast extends Rule
 				$val = (double)$val;
 				break;
 
-			case 'string':
+			case 'string': case 'str':
 				$val = Text::toString($val);
 				break;
+
+            case 'array':
+                if (\Rose\typeOf($val) === 'Rose\Arry')
+                    break;
+                $val = new Arry([ $val ]);
+                break;
+
+            case 'object':
+                if (\Rose\typeOf($val) === 'Rose\Map')
+                    break;
+                $val = new Map([ 'value' => $val ]);
+                break;
 
 			case 'null':
 				$val = null;

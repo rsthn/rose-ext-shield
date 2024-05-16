@@ -287,23 +287,51 @@ Expr::register('shield:method-required', function($args, $parts, $data) {
 
 /**
  * Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
- * request body, or with 422/@messages.invalid_content_type if the content-type is not valid.
- * @code (`shield:body-required` <content-type...>)
+ * request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
+ * it is assumed to be `application/json`.
+ * @code (`shield:body-required` [content-type...])
  */
 Expr::register('shield:body-required', function($args, $parts, $data) {
     $content_type = Gateway::getInstance()->input->contentType;
     if ($content_type === null)
         throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
 
-    for ($i = 1; $i < $args->length; $i++) {
-        if ($content_type === $args->get($i))
+    if ($args->length == 1) {
+        if ($content_type === 'application/json')
             return true;
+    }
+    else {
+        for ($i = 1; $i < $args->length; $i++) {
+            if ($content_type === $args->get($i))
+                return true;
+        }
     }
 
     throw new WindError('InvalidContentType', [
         'response' => 422, 
         'error' => Strings::get('@messages.invalid_content_type'),
         'expected' => $args->slice(1)
+    ]);
+});
+
+
+/**
+ * Ensures the request's body does not exceed the specified number of bytes. Fails with 422/@messages.request_body_too_large when so.
+ * @code (`shield:body-max-size` <max-size>)
+ */
+Expr::register('shield:body-max-size', function($args, $parts, $data) {
+    if (Gateway::getInstance()->input->contentType === null)
+        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+
+    $max_size = (int)$args->get(1);
+    $size = Gateway::getInstance()->input->size;
+    if ($size <= $max_size)
+        return true;
+
+    throw new WindError('RequestBodyTooLarge', [
+        'response' => 422, 
+        'error' => Strings::get('@messages.request_body_too_large'),
+        'maximum' => $max_size
     ]);
 });
 
@@ -504,10 +532,11 @@ Expr::register('_shield:validate-data', function($parts, $data)
         $output = null;
         foreach ($desc as $_desc) {
             Shield::validateValue ($_desc, null, null, $inputData, $outputData, $data, $errors);
+            $newOutput = $outputData->get('');
             if ($output === null)
-                $output = $outputData->get('');
-            else
-                $output->merge($outputData->get(''), true);
+                $output = $newOutput;
+            else if ($newOutput !== null)
+                $output->merge($newOutput, true);
         }
     }
     else {
@@ -561,3 +590,4 @@ class_exists('Rose\Ext\Shield\CaseElse');
 class_exists('Rose\Ext\Shield\CaseEnd');
 class_exists('Rose\Ext\Shield\MinItems');
 class_exists('Rose\Ext\Shield\MaxItems');
+class_exists('Rose\Ext\Shield\UniqueItems');

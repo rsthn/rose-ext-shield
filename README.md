@@ -13,9 +13,13 @@ composer require rsthn/rose-ext-shield
 ### (`shield:method-required` \<method...>)
 Ensures the request was made using the specified method(s) or fails with 405/@messages.method_not_allowed.
 
-### (`shield:body-required` \<content-type...>)
+### (`shield:body-required` [content-type...])
 Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
-request body, or with 422/@messages.invalid_content_type if the content-type is not valid.
+request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
+it is assumed to be `application/json`.
+
+### (`shield:body-max-size` \<max-size>)
+Ensures the request's body does not exceed the specified number of bytes. Fails with 422/@messages.request_body_too_large when so.
 
 ### (`shield:field` \<output-name> [rules...])
 Returns a field descriptor.
