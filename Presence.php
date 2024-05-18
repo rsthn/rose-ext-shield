@@ -9,50 +9,50 @@ use Rose\Ext\Shield;
 
 class Presence extends Rule
 {
-	public function getName ()
-	{
-		return 'presence';
-	}
+    public function getName ()
+    {
+        return 'presence';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		if ($value === true) $value = 'true';
-		if ($value === false) $value = 'false';
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        if ($value === true) $value = 'true';
+        if ($value === false) $value = 'false';
+        $this->identifier = $value;
 
-		switch ($value)
-		{
-			case 'true|null':
-				if (!$input->has($name)) {
-					$val = null;
-					throw new StopValidation();
-				}
+        switch ($value)
+        {
+            case 'true|null':
+                if (!$input->has($name)) {
+                    $val = null;
+                    throw new StopValidation();
+                }
 
-				break;
+                break;
 
-			case 'true|empty':
-				if (!$input->has($name)) {
-					$val = '';
-					throw new StopValidation();
-				}
+            case 'true|empty':
+                if (!$input->has($name)) {
+                    $val = '';
+                    throw new StopValidation();
+                }
 
-				break;
+                break;
 
-			case 'true':
-				if (!$input->has($name))
-					return false;
-				break;
+            case 'true':
+                if (!$input->has($name))
+                    return false;
+                break;
 
-			case 'true|ignore':
+            case 'true|ignore':
             case 'false':
-				if (!$input->has($name))
-					throw new IgnoreField();
-				break;
-		}
+                if (!$input->has($name))
+                    throw new IgnoreField();
+                break;
+        }
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('presence', 'Rose\Ext\Shield\Presence');

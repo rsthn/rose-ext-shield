@@ -11,21 +11,21 @@ use Rose\Errors\Error;
 
 class ContentType extends Rule
 {
-	public function getName ()
-	{
-		return 'content-type';
-	}
+    public function getName ()
+    {
+        return 'content-type';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = Text::toLowerCase($this->getValue($context));
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = Text::toLowerCase($this->getValue($context));
 
-		if (Gateway::getInstance()->input->contentType !== $value)
-			return false;
+        if (Gateway::getInstance()->input->contentType !== $value)
+            return false;
 
-		$val = Gateway::getInstance()->input->data;
-		return true;
-	}
+        $val = Gateway::getInstance()->input->data;
+        return true;
+    }
 };
 
 Shield::registerRule('content-type', 'Rose\Ext\Shield\ContentType');

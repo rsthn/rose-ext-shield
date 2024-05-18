@@ -10,22 +10,22 @@ use Rose\Text;
 
 class MinItems extends Rule
 {
-	public function getName ()
-	{
-		return 'min-items';
-	}
+    public function getName ()
+    {
+        return 'min-items';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = (int)$this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = (int)$this->getValue($context);
+        $this->identifier = $value;
 
         $type = \Rose\typeOf($val);
         if ($type !== 'Rose\Arry' && $type !== 'Rose\Map')
             return false;
 
-		return $val->length() >= $value;
-	}
+        return $val->length() >= $value;
+    }
 };
 
 Shield::registerRule('min-items', 'Rose\Ext\Shield\MinItems');

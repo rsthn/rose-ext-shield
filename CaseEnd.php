@@ -10,13 +10,13 @@ use Rose\Map;
 
 class CaseEnd extends Rule
 {
-	public function getName() {
-		return 'case-end';
-	}
+    public function getName() {
+        return 'case-end';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors) {
+    public function validate ($name, &$val, $input, $output, $context, $errors) {
         return true;
-	}
+    }
 
     public function failed ($input, $output, $context, $errors) {
     }

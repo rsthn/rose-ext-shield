@@ -10,30 +10,30 @@ use Rose\Text;
 
 class Requires extends Rule
 {
-	public function getName ()
-	{
-		return 'requires';
-	}
+    public function getName ()
+    {
+        return 'requires';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = Text::split('|', $this->getValue($context));
-		$this->identifier = $value->get(0);
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = Text::split('|', $this->getValue($context));
+        $this->identifier = $value->get(0);
 
-		if ($output->has($value->get(0)))
-			return true;
+        if ($output->has($value->get(0)))
+            return true;
 
-		if ($value->length > 1) switch ($value->get(1))
-		{
-			case 'ignore':
-				throw new IgnoreField();
+        if ($value->length > 1) switch ($value->get(1))
+        {
+            case 'ignore':
+                throw new IgnoreField();
 
-			case 'stop':
-				throw new StopValidation();
-		}
+            case 'stop':
+                throw new StopValidation();
+        }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 Shield::registerRule('requires', 'Rose\Ext\Shield\Requires');

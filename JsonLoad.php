@@ -15,25 +15,25 @@ use Rose\JSON;
 
 class JsonLoad extends Rule
 {
-	public function getName ()
-	{
-		return 'json-load';
-	}
+    public function getName ()
+    {
+        return 'json-load';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		if ($value === 'POST' || $value === 'body') {
-			if (Gateway::getInstance()->input->contentType !== 'application/json')
-				return false;
-			$val = Gateway::getInstance()->body;
-		}
-		else
-			$val = JSON::parse($value);
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        if ($value === 'POST' || $value === 'body') {
+            if (Gateway::getInstance()->input->contentType !== 'application/json')
+                return false;
+            $val = Gateway::getInstance()->body;
+        }
+        else
+            $val = JSON::parse($value);
 
-		if (!$val) return false;
-		return true;
-	}
+        if (!$val) return false;
+        return true;
+    }
 };
 
 Shield::registerRule('json-load', 'Rose\Ext\Shield\JsonLoad');

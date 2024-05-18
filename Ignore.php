@@ -9,18 +9,18 @@ use Rose\Text;
 
 class Ignore extends Rule
 {
-	public function getName ()
-	{
-		return 'ignore';
-	}
+    public function getName ()
+    {
+        return 'ignore';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		if (\Rose\bool($this->getValue($context)))
-			throw new IgnoreField();
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        if (\Rose\bool($this->getValue($context)))
+            throw new IgnoreField();
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('ignore', 'Rose\Ext\Shield\Ignore');

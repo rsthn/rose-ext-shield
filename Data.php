@@ -23,6 +23,8 @@ class SkipError extends Error
 
 class Data extends Rule
 {
+    public static $IGNORE = null;
+
     public function getName ()
     {
         return 'data';
@@ -296,6 +298,9 @@ class Data extends Rule
                 self::updateValue($value, $ctx, $output);
                 $rule = $node->get(1);
 
+                if (self::$IGNORE === null)
+                    self::$IGNORE = new Map();
+
                 for ($i = 0; $i < $input_value->length(); $i++)
                 {
                     try {
@@ -309,13 +314,22 @@ class Data extends Rule
                         $output->push($val);
                     }
                     catch (IgnoreField $e) {
+                        $output->push(self::$IGNORE);
                     }
                     catch (SkipError $e) {
+                        $output->push(self::$IGNORE);
                     }
                     catch (\Exception $e) {
+                        $output->push(self::$IGNORE);
                         $errors->set($cpath, $e->getMessage());
                     }
                 }
+
+                $output = $output->filter(function($item) {
+                    return $item !== self::$IGNORE;
+                });
+
+                self::updateValue($value, $ctx, $output);
                 break;
 
             case 'vector':
@@ -446,8 +460,9 @@ class Data extends Rule
             Shield::validateValue ($node->get(1), $rel_key, $rel_key, $input, $rel_root, $ctx, $_errors);
             if ($_errors->length) {
                 $n = Text::length($rel_key);
-                $_errors->forEach(function($value, $key) use($errors, $path, $rel_key, $n) {
-                    if (Text::startsWith($key, $rel_key))
+                $rel_key_str = (string)$rel_key;
+                $_errors->forEach(function($value, $key) use($errors, $path, $rel_key_str, $n) {
+                    if (Text::startsWith((string)$key, $rel_key_str))
                         $errors->set($path.Text::substring($key, $n), $value);
                 });
                 throw new SkipError();

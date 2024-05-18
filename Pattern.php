@@ -13,26 +13,26 @@ use Rose\Regex;
 
 class Pattern extends Rule
 {
-	public function getName ()
-	{
-		return 'pattern';
-	}
+    public function getName ()
+    {
+        return 'pattern';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
-		{
-			$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
+        {
+            $this->identifier = $value;
 
-			$regex = Strings::getInstance()->regex->$value;
-			if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
-		}
-		else
-			$regex = $value;
+            $regex = Strings::getInstance()->regex->$value;
+            if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
+        }
+        else
+            $regex = $value;
 
-		return Regex::_matches ($regex, $val);
-	}
+        return Regex::_matches ($regex, $val);
+    }
 };
 
 Shield::registerRule('pattern', 'Rose\Ext\Shield\Pattern');

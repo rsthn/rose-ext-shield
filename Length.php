@@ -10,18 +10,18 @@ use Rose\Text;
 
 class Length extends Rule
 {
-	public function getName ()
-	{
-		return 'length';
-	}
+    public function getName ()
+    {
+        return 'length';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = (int)$this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = (int)$this->getValue($context);
+        $this->identifier = $value;
 
-		return Text::length(Text::toString($val)) == $value;
-	}
+        return Text::length(Text::toString($val)) == $value;
+    }
 };
 
 Shield::registerRule('length', 'Rose\Ext\Shield\Length');

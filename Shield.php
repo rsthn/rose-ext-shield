@@ -105,10 +105,8 @@ class Shield
             }
 
             $key = Text::split(':', $key);
-
             $className = self::$rules->get($key->get(0));
-            if (!$className)
-            {
+            if (!$className) {
                 throw new Error ('Undefined validation rule: ' . $key->get(0));
                 return;
             }
@@ -139,7 +137,7 @@ class Shield
     /**
      * Validates a value.
      */
-    public static function validateValue ($desc, $input_name, $output_name, \Rose\Map $input, \Rose\Map $output, \Rose\Map $context, \Rose\Map $errors)
+    public static function validateValue ($desc, $input_name, $output_name, $input, $output, \Rose\Map $context, \Rose\Map $errors)
     {
         if (\Rose\isString($desc))
         {
@@ -159,7 +157,6 @@ class Shield
 
         $value = $input->get($input_name);
         $output->set($output_name, $value);
-        $output->set('_selfName', $output_name);
         $remove = false;
 
         $allowedMap = null;
@@ -174,9 +171,7 @@ class Shield
                 $allowedMap = $unallowedMap = null;
             }
 
-            $output->set('_selfValue', $output->__nativeArray[$output_name]);
             $context->set('$', $output->__nativeArray[$output_name]);
-
             $_errors = new Map();
 
             try {
@@ -223,10 +218,6 @@ class Shield
         $context->set('$', $_val);
 
         $value = $output->__nativeArray[$output_name];
-
-        $output->remove('_selfName');
-        $output->remove('_selfValue');
-
         if ($remove) {
             $output->remove($output_name);
             return null;
@@ -591,3 +582,4 @@ class_exists('Rose\Ext\Shield\CaseEnd');
 class_exists('Rose\Ext\Shield\MinItems');
 class_exists('Rose\Ext\Shield\MaxItems');
 class_exists('Rose\Ext\Shield\UniqueItems');
+class_exists('Rose\Ext\Shield\Enum');

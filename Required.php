@@ -9,62 +9,62 @@ use Rose\Text;
 
 class Required extends Rule
 {
-	public function getName ()
-	{
-		return 'required';
-	}
+    public function getName ()
+    {
+        return 'required';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
 
-		if (\Rose\isString($val))
-		{
-			$val = Text::trim($val);
-			$is_empty = Text::length($val) == 0;
-		}
-		else
-			$is_empty = $val === null;
+        if (\Rose\isString($val))
+        {
+            $val = Text::trim($val);
+            $is_empty = Text::length($val) == 0;
+        }
+        else
+            $is_empty = $val === null;
 
-		if ($value === true) $value = 'true';
-		if ($value === false) $value = 'false';
+        if ($value === true) $value = 'true';
+        if ($value === false) $value = 'false';
 
-		$this->identifier = $value;
+        $this->identifier = $value;
 
-		switch ($value)
-		{
-			case 'true|null':
-				if ($is_empty) {
-					$val = null;
-					throw new StopValidation();
-				}
+        switch ($value)
+        {
+            case 'true|null':
+                if ($is_empty) {
+                    $val = null;
+                    throw new StopValidation();
+                }
 
-				break;
+                break;
 
-			case 'true|empty':
-				if ($is_empty)
-				{
-					$val = '';
-					throw new StopValidation();
-				}
+            case 'true|empty':
+                if ($is_empty)
+                {
+                    $val = '';
+                    throw new StopValidation();
+                }
 
-				break;
+                break;
 
-			case 'true':
-				if ($is_empty)
-					return false;
+            case 'true':
+                if ($is_empty)
+                    return false;
 
-				break;
+                break;
 
-			case 'false':
-			case 'true|ignore':
-				if ($is_empty)
-					throw new IgnoreField();
-				break;
-		}
+            case 'false':
+            case 'true|ignore':
+                if ($is_empty)
+                    throw new IgnoreField();
+                break;
+        }
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('required', 'Rose\Ext\Shield\Required');

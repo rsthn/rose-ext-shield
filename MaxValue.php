@@ -10,18 +10,18 @@ use Rose\Text;
 
 class MaxValue extends Rule
 {
-	public function getName ()
-	{
-		return 'max-value';
-	}
+    public function getName ()
+    {
+        return 'max-value';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        $this->identifier = $value;
 
-		return (float)$val <= (float)$value;
-	}
+        return (float)$val <= (float)$value;
+    }
 };
 
 Shield::registerRule('max-value', 'Rose\Ext\Shield\MaxValue');

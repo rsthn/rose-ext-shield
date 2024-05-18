@@ -10,29 +10,29 @@ use Rose\Text;
 
 class FileType extends Rule
 {
-	public function getName ()
-	{
-		return 'file-type';
-	}
+    public function getName ()
+    {
+        return 'file-type';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        $this->identifier = $value;
 
-		if (\Rose\typeOf($val) != 'Rose\\Map')
-			return false;
+        if (\Rose\typeOf($val) != 'Rose\\Map')
+            return false;
 
-		if ($val->error != 0)
-			return false;
+        if ($val->error != 0)
+            return false;
 
-		$value = Text::split(',', $value)->map(function($i) { return Text::trim($i); });
+        $value = Text::split(',', $value)->map(function($i) { return Text::trim($i); });
 
-		if ($value->indexOf(Text::toLowerCase(Text::substring(Path::extname($val->name), 1))) === null)
-			return false;
+        if ($value->indexOf(Text::toLowerCase(Text::substring(Path::extname($val->name), 1))) === null)
+            return false;
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('file-type', 'Rose\Ext\Shield\FileType');

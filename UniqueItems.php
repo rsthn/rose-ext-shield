@@ -10,20 +10,20 @@ use Rose\Text;
 
 class UniqueItems extends Rule
 {
-	public function getName ()
-	{
-		return 'unique-items';
-	}
+    public function getName ()
+    {
+        return 'unique-items';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
         $type = \Rose\typeOf($val);
         if ($type !== 'Rose\Arry')
             return false;
 
         $val = $val->unique();
         return true;
-	}
+    }
 };
 
 Shield::registerRule('unique-items', 'Rose\Ext\Shield\UniqueItems');

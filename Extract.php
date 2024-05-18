@@ -13,27 +13,27 @@ use Rose\Regex;
 
 class Extract extends Rule
 {
-	public function getName ()
-	{
-		return 'extract';
-	}
+    public function getName ()
+    {
+        return 'extract';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
-		{
-			$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        if (!$this->valueIsString() && $value[0] != '/' && $value[0] != '|')
+        {
+            $this->identifier = $value;
 
-			$regex = Strings::getInstance()->regex->$value;
-			if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
-		}
-		else
-			$regex = $value;
+            $regex = Strings::getInstance()->regex->$value;
+            if (!$regex) throw new ArgumentError('undefined_regex: '.$value);
+        }
+        else
+            $regex = $value;
 
-		$val = Regex::_extract ($regex, $val, '', 0);
-		return true;
-	}
+        $val = Regex::_extract ($regex, $val, '', 0);
+        return true;
+    }
 };
 
 Shield::registerRule('extract', 'Rose\Ext\Shield\Extract');

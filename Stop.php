@@ -9,18 +9,18 @@ use Rose\Text;
 
 class Stop extends Rule
 {
-	public function getName ()
-	{
-		return 'stop';
-	}
+    public function getName ()
+    {
+        return 'stop';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		if (\Rose\bool($this->getValue($context)))
-			throw new StopValidation();
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        if (\Rose\bool($this->getValue($context)))
+            throw new StopValidation();
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('stop', 'Rose\Ext\Shield\Stop');

@@ -11,12 +11,12 @@ use Rose\Map;
 
 class CaseWhen extends Rule
 {
-	public function getName() {
-		return 'case-when';
-	}
+    public function getName() {
+        return 'case-when';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
         $value = $this->getValue($context);
         if (!$value) throw new CondValidation(new Map([
             'case-when' => true,
@@ -29,7 +29,7 @@ class CaseWhen extends Rule
             'case-else' => true,
             'case-end' => true,
         ]));
-	}
+    }
 
     public function failed ($input, $output, $context, $errors) {
         throw new CondValidation(new Map([

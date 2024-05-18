@@ -9,16 +9,16 @@ use Rose\Text;
 
 class Block extends Rule
 {
-	public function getName ()
-	{
-		return 'block';
-	}
+    public function getName ()
+    {
+        return 'block';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$this->getValue($context);
-		return true;
-	}
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $this->getValue($context);
+        return true;
+    }
 };
 
 Shield::registerRule('block', 'Rose\Ext\Shield\Block');

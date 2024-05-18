@@ -10,27 +10,27 @@ use Rose\Text;
 
 class MaxFileSize extends Rule
 {
-	public function getName ()
-	{
-		return 'max-file-size';
-	}
+    public function getName ()
+    {
+        return 'max-file-size';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        $this->identifier = $value;
 
-		if (\Rose\typeOf($val) != 'Rose\\Map')
-			return false;
+        if (\Rose\typeOf($val) != 'Rose\\Map')
+            return false;
 
-		if ($val->error != 0)
-			return false;
+        if ($val->error != 0)
+            return false;
 
-		if ((int)$val->size > (int)$value)
-			return false;
+        if ((int)$val->size > (int)$value)
+            return false;
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('max-file-size', 'Rose\Ext\Shield\MaxFileSize');

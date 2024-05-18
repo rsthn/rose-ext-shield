@@ -10,18 +10,18 @@ use Rose\Text;
 
 class MinLength extends Rule
 {
-	public function getName ()
-	{
-		return 'min-length';
-	}
+    public function getName ()
+    {
+        return 'min-length';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = (int)$this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = (int)$this->getValue($context);
+        $this->identifier = $value;
 
-		return Text::length(Text::toString($val)) >= $value;
-	}
+        return Text::length(Text::toString($val)) >= $value;
+    }
 };
 
 Shield::registerRule('min-length', 'Rose\Ext\Shield\MinLength');

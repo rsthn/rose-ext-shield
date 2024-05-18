@@ -10,18 +10,18 @@ use Rose\Text;
 
 class MinValue extends Rule
 {
-	public function getName ()
-	{
-		return 'min-value';
-	}
+    public function getName ()
+    {
+        return 'min-value';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        $this->identifier = $value;
 
-		return (float)$val >= (float)$value;
-	}
+        return (float)$val >= (float)$value;
+    }
 };
 
 Shield::registerRule('min-value', 'Rose\Ext\Shield\MinValue');

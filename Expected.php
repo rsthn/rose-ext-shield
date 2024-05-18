@@ -10,29 +10,29 @@ use Rose\Text;
 
 class Expected extends Rule
 {
-	public function getName ()
-	{
-		return 'expected';
-	}
+    public function getName ()
+    {
+        return 'expected';
+    }
 
-	public function validate ($name, &$val, $input, $output, $context, $errors)
-	{
-		$value = $this->getValue($context);
-		$this->identifier = $value;
+    public function validate ($name, &$val, $input, $output, $context, $errors)
+    {
+        $value = $this->getValue($context);
+        $this->identifier = $value;
 
-		switch ($value)
-		{
-			case 'boolean': case 'bool':
-				return \Rose\isBool($val);
+        switch ($value)
+        {
+            case 'boolean': case 'bool':
+                return \Rose\isBool($val);
 
-			case 'integer': case 'int':
-				return \Rose\isInteger($val);
+            case 'integer': case 'int':
+                return \Rose\isInteger($val);
 
-			case 'number':
-				return \Rose\isNumber($val);
+            case 'number':
+                return \Rose\isNumber($val);
 
-			case 'string': case 'str':
-				return \Rose\isString($val);
+            case 'string': case 'str':
+                return \Rose\isString($val);
 
             case 'array':
                 return \Rose\typeOf($val) === 'Rose\Arry';
@@ -40,15 +40,15 @@ class Expected extends Rule
             case 'object':
                 return \Rose\typeOf($val) === 'Rose\Map';
 
-			case 'null':
-				return $val === null;
+            case 'null':
+                return $val === null;
 
-			default:
-				throw new Error('undefined_type: ' . $value);
-		}
+            default:
+                throw new Error('undefined_type: ' . $value);
+        }
 
-		return true;
-	}
+        return true;
+    }
 };
 
 Shield::registerRule('expected', 'Rose\Ext\Shield\Expected');
