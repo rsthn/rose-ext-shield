@@ -199,7 +199,7 @@ class Shield
             catch (\Exception $e)
             {
                 $tmp = $rule->getIdentifier();
-                if (!$tmp)
+                if ($tmp === '')
                     $errors->merge($_errors, true);
                 else
                     $errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());

@@ -14,6 +14,10 @@ class Block extends Rule
         return 'block';
     }
 
+    public function getIdentifier() {
+        return null;
+    }
+
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
         $this->getValue($context);

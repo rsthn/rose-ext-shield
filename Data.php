@@ -240,6 +240,9 @@ class Data extends Rule
         switch ($node->first())
         {
             case 'object':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
+
                 if (\Rose\typeOf($value, true) !== 'Rose\\Map') {
                     $errors->set($path, Shield::getMessage('expected_object'));
                     throw new SkipError();
@@ -288,6 +291,9 @@ class Data extends Rule
                 break;
 
             case 'array':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
+
                 if (\Rose\typeOf($value, true) !== 'Rose\\Arry') {
                     $errors->set($path, Shield::getMessage('expected_array'));
                     throw new SkipError();
@@ -333,6 +339,9 @@ class Data extends Rule
                 break;
 
             case 'vector':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
+
                 if (\Rose\typeOf($value, true) !== 'Rose\\Arry') {
                     $errors->set($path, Shield::getMessage('expected_vector'));
                     throw new SkipError();
@@ -370,6 +379,9 @@ class Data extends Rule
                 break;
 
             case 'type':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
+
                 // TODO: Fix that any custom created vars at the $out level will be lost.
                 $tmp = new Map();
                 $tmp->set('tmp', $value);
@@ -391,6 +403,9 @@ class Data extends Rule
                 break;
 
             case 'value':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
+
                 if ($value !== $node->get(1)) {
                     $errors->set($path, 'value should be `' . Text::toString($node->get(1)) . '`');
                     throw new SkipError();
@@ -399,6 +414,8 @@ class Data extends Rule
                 break;
 
             case 'rules':
+                if ($is_optional && $value === null)
+                    throw new IgnoreField();
                 $validate = true;
                 break;
 
