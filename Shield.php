@@ -154,6 +154,7 @@ class Shield
 
         $input_name = $input_name ?? $desc[0];
         $output_name = $output_name ?? $desc[1];
+        $report_as = $input_name;
 
         $value = $input->get($input_name);
         $output->set($output_name, $value);
@@ -182,7 +183,11 @@ class Shield
                 }
 
                 if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context, $_errors))
+                {
+                    if ($rule->getReportedName() !== null)
+                        $report_as = $rule->getReportedName();
                     continue;
+                }
             }
             catch (CondValidation $e) {
                 $allowedMap = $e->allowedMap;
@@ -202,13 +207,13 @@ class Shield
                 if ($tmp === '')
                     $errors->merge($_errors, true);
                 else
-                    $errors->set($input_name, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
+                    $errors->set($report_as, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
 
                 $remove = true;
                 break;
             }
 
-            $errors->set($input_name, Shield::getMessage($rule->getIdentifier()));
+            $errors->set($report_as, Shield::getMessage($rule->getIdentifier()));
             $remove = true;
             break;
         }
@@ -279,15 +284,18 @@ Expr::register('shield:method-required', function($args, $parts, $data) {
 /**
  * Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
  * request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
- * it is assumed to be `application/json`.
- * @code (`shield:body-required` [content-type...])
+ * it is assumed to be `application/json`. Use value `true` to allow any content type.
+ * @code (`shield:body-required` [true|content-type...])
  */
 Expr::register('shield:body-required', function($args, $parts, $data) {
     $content_type = Gateway::getInstance()->input->contentType;
     if ($content_type === null)
         throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
 
-    if ($args->length == 1) {
+    if ($args->length === 2 && $args->get(1) === true)
+        return true;
+
+    if ($args->length === 1) {
         if ($content_type === 'application/json')
             return true;
     }
@@ -583,3 +591,4 @@ class_exists('Rose\Ext\Shield\MinItems');
 class_exists('Rose\Ext\Shield\MaxItems');
 class_exists('Rose\Ext\Shield\UniqueItems');
 class_exists('Rose\Ext\Shield\Enum');
+class_exists('Rose\Ext\Shield\ReportAs');

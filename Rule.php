@@ -7,20 +7,16 @@ use Rose\Arry;
 use Rose\Map;
 use Rose\Text;
 
-/*
-**	Shield validation rule.
-*/
-
 abstract class Rule
 {
     protected $baseIdentifier;
-    protected $identifier;
+    protected $identifier = null;
     protected $value;
+    protected $reportedName = null;
 
     public function __construct ($value, $baseIdentifier=null) {
         $this->value = $value;
         $this->baseIdentifier = $baseIdentifier;
-        $this->identifier = null;
     }
 
     protected function valueIsString () {
@@ -33,13 +29,17 @@ abstract class Rule
 
     public abstract function getName();
 
+    public function getReportedName() {
+        return $this->reportedName;
+    }
+
     public function __toString() {
         return $this->getName();
     }
 
     public function getIdentifier() {
-        $val = $this->baseIdentifier ? $this->baseIdentifier : $this->identifier;
-        return Text::length($val) ? (\Rose\isString($val) && $val[0] == '@' ? Text::substring($val, 1) : $this->getName() . ':' . $val) : $this->getName();
+        $val = Text::toString($this->baseIdentifier ?? $this->identifier);
+        return $val !== '' ? ($val[0] === '@' ? Text::substring($val, 1) : $this->getName() . ':' . $val) : $this->getName();
     }
 
     public abstract function validate ($name, &$value, $input, $output, $context, $errors);

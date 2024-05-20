@@ -352,7 +352,7 @@ class Data extends Rule
                     throw new SkipError();
                 }
 
-                $input_value = $input;
+                $input_value = $value;
                 $output = new Arry();
                 self::updateValue($value, $ctx, $output);
 
@@ -385,10 +385,11 @@ class Data extends Rule
                 // TODO: Fix that any custom created vars at the $out level will be lost.
                 $tmp = new Map();
                 $tmp->set('tmp', $value);
+
                 $_errors = new Map();
                 Shield::validateValue ($node->get(1), 'tmp', 'tmp', $tmp, $tmp, $ctx, $_errors);
-
-                if ($_errors->length) {
+                if ($_errors->length)
+                {
                     $_errors->forEach(function($value, $key) use($errors, $path) {
                         if (Text::startsWith($key, 'tmp'))
                             $errors->set($path.Text::substring($key, 3), $value);
@@ -476,11 +477,9 @@ class Data extends Rule
             $_errors = new Map();
             Shield::validateValue ($node->get(1), $rel_key, $rel_key, $input, $rel_root, $ctx, $_errors);
             if ($_errors->length) {
-                $n = Text::length($rel_key);
-                $rel_key_str = (string)$rel_key;
-                $_errors->forEach(function($value, $key) use($errors, $path, $rel_key_str, $n) {
-                    if (Text::startsWith((string)$key, $rel_key_str))
-                        $errors->set($path.Text::substring($key, $n), $value);
+                $path = Text::substring($path, 0, -Text::length((string)$rel_key));
+                $_errors->forEach(function($value, $key) use($errors, $path) {
+                    $errors->set($path.$key, $value);
                 });
                 throw new SkipError();
             }
