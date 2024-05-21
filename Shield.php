@@ -592,3 +592,4 @@ class_exists('Rose\Ext\Shield\MaxItems');
 class_exists('Rose\Ext\Shield\UniqueItems');
 class_exists('Rose\Ext\Shield\Enum');
 class_exists('Rose\Ext\Shield\ReportAs');
+class_exists('Rose\Ext\Shield\Fail');
