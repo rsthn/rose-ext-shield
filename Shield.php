@@ -285,9 +285,13 @@ Expr::register('shield:method-required', function($args, $parts, $data) {
  * Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
  * request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
  * it is assumed to be `application/json`. Use value `true` to allow any content type.
- * @code (`shield:body-required` [true|content-type...])
+ * @code (`shield:body-required` [false|true|content-type...])
  */
-Expr::register('shield:body-required', function($args, $parts, $data) {
+Expr::register('shield:body-required', function($args, $parts, $data)
+{
+    if ($args->length === 2 && $args->get(1) === false)
+        return true;
+
     $content_type = Gateway::getInstance()->input->contentType;
     if ($content_type === null)
         throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);

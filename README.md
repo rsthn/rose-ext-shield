@@ -13,7 +13,7 @@ composer require rsthn/rose-ext-shield
 ### (`shield:method-required` \<method...>)
 Ensures the request was made using the specified method(s) or fails with 405/@messages.method_not_allowed.
 
-### (`shield:body-required` [true|content-type...])
+### (`shield:body-required` [false|true|content-type...])
 Ensures the request's content-type is one of the specified types. Fails with 422/@messages.request_body_missing if there is no
 request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
 it is assumed to be `application/json`. Use value `true` to allow any content type.
