@@ -244,7 +244,7 @@ class Data extends Rule
                     throw new IgnoreField();
 
                 if (\Rose\typeOf($value, true) !== 'Rose\\Map') {
-                    $errors->set($path, Shield::getMessage('expected_object'));
+                    $errors->set($path, Shield::getMessage('expected:object'));
                     throw new SkipError();
                 }
 
@@ -295,7 +295,7 @@ class Data extends Rule
                     throw new IgnoreField();
 
                 if (\Rose\typeOf($value, true) !== 'Rose\\Arry') {
-                    $errors->set($path, Shield::getMessage('expected_array'));
+                    $errors->set($path, Shield::getMessage('expected:array'));
                     throw new SkipError();
                 }
 
@@ -343,7 +343,7 @@ class Data extends Rule
                     throw new IgnoreField();
 
                 if (\Rose\typeOf($value, true) !== 'Rose\\Arry') {
-                    $errors->set($path, Shield::getMessage('expected_vector'));
+                    $errors->set($path, Shield::getMessage('expected:vector'));
                     throw new SkipError();
                 }
 
@@ -424,7 +424,7 @@ class Data extends Rule
             case 'bool':
                 if (!\Rose\isBool($value)) {
                     if ($is_optional) throw new IgnoreField();
-                    $errors->set($path, Shield::getMessage('expected_boolean'));
+                    $errors->set($path, Shield::getMessage('expected:boolean'));
                     throw new SkipError();
                 }
                 $validate = true;
@@ -434,7 +434,7 @@ class Data extends Rule
             case 'int':
                 if (!\Rose\isInteger($value)) {
                     if ($is_optional) throw new IgnoreField();
-                    $errors->set($path, Shield::getMessage('expected_integer'));
+                    $errors->set($path, Shield::getMessage('expected:integer'));
                     throw new SkipError();
                 }
                 $validate = true;
@@ -443,7 +443,7 @@ class Data extends Rule
             case 'number':
                 if (!\Rose\isNumber($value) && !\Rose\isInteger($value)) {
                     if ($is_optional) throw new IgnoreField();
-                    $errors->set($path, Shield::getMessage('expected_number'));
+                    $errors->set($path, Shield::getMessage('expected:number'));
                     throw new SkipError();
                 }
                 $validate = true;
@@ -453,7 +453,7 @@ class Data extends Rule
             case 'str':
                 if (!\Rose\isString($value)) {
                     if ($is_optional) throw new IgnoreField();
-                    $errors->set($path, Shield::getMessage('expected_string'));
+                    $errors->set($path, Shield::getMessage('expected:string'));
                     throw new SkipError();
                 }
                 $validate = true;
@@ -462,7 +462,7 @@ class Data extends Rule
             case 'null':
                 if ($value !== null) {
                     if ($is_optional) throw new IgnoreField();
-                    $errors->set($path, Shield::getMessage('expected_null'));
+                    $errors->set($path, Shield::getMessage('expected:null'));
                     throw new SkipError();
                 }
                 break;
