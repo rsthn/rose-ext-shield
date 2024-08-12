@@ -18,6 +18,9 @@ Ensures the request's content-type is one of the specified types. Fails with 422
 request body, or with 422/@messages.invalid_content_type if the content-type is not valid. If no content type is provided then
 it is assumed to be `application/json`. Use value `true` to allow any content type.
 
+### (`shield:body-min-size` \<max-size>)
+Ensures the request's body is at least the specified number of bytes. Fails with 422/@messages.request_body_too_small if not.
+
 ### (`shield:body-max-size` \<max-size>)
 Ensures the request's body does not exceed the specified number of bytes. Fails with 422/@messages.request_body_too_large when so.
 

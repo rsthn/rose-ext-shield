@@ -293,7 +293,7 @@ Expr::register('shield:body-required', function($args, $parts, $data)
         return true;
 
     $content_type = Gateway::getInstance()->input->contentType;
-    if ($content_type === null)
+    if ($content_type === null || Gateway::getInstance()->input->size == 0)
         throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
 
     if ($args->length === 2 && $args->get(1) === true)
@@ -314,6 +314,27 @@ Expr::register('shield:body-required', function($args, $parts, $data)
         'response' => 422, 
         'error' => Strings::get('@messages.invalid_content_type'),
         'expected' => $args->slice(1)
+    ]);
+});
+
+
+/**
+ * Ensures the request's body is at least the specified number of bytes. Fails with 422/@messages.request_body_too_small if not.
+ * @code (`shield:body-min-size` <min-size>)
+ */
+Expr::register('shield:body-min-size', function($args, $parts, $data) {
+    if (Gateway::getInstance()->input->contentType === null)
+        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+
+    $min_size = (int)$args->get(1);
+    $size = Gateway::getInstance()->input->size;
+    if ($size >= $min_size)
+        return true;
+
+    throw new WindError('RequestBodyTooSmall', [
+        'response' => 422, 
+        'error' => Strings::get('@messages.request_body_too_small'),
+        'minimum' => $min_size
     ]);
 });
 
