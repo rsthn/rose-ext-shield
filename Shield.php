@@ -618,3 +618,4 @@ class_exists('Rose\Ext\Shield\UniqueItems');
 class_exists('Rose\Ext\Shield\Enum');
 class_exists('Rose\Ext\Shield\ReportAs');
 class_exists('Rose\Ext\Shield\Fail');
+class_exists('Rose\Ext\Shield\Match_');

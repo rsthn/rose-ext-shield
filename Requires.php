@@ -23,16 +23,20 @@ class Requires extends Rule
         if ($output->has($value->get(0)))
             return true;
 
-        if ($value->length > 1) switch ($value->get(1))
+        if ($value->length > 1)
+        switch ($value->get(1))
         {
-            case 'ignore':
-                throw new IgnoreField();
+            case 'error':
+                return false;
 
             case 'stop':
                 throw new StopValidation();
+
+            case 'ignore':
+                \Rose\trace('[shield] using `requires` with `ignore` is the default behavior and no longer needed');
         }
 
-        return false;
+        throw new IgnoreField();
     }
 };
 
