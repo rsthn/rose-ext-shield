@@ -32,7 +32,7 @@ class Match_ extends Rule
             $regex = $value;
 
         $val = Regex::_matchFirst($regex, $val);
-        return !!$val;
+        return $val->length() > 0;
     }
 };
 
