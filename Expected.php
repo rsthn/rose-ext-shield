@@ -29,7 +29,7 @@ class Expected extends Rule
                 return \Rose\isInteger($val);
 
             case 'number':
-                return \Rose\isNumber($val);
+                return \Rose\isNumber($val) || \Rose\isInteger($val);
 
             case 'string': case 'str':
                 return \Rose\isString($val);
