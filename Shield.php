@@ -525,7 +525,7 @@ Expr::register('_shield:model', function($parts, $data)
 /**
  * Validates the fields in the input data using the specified data rules. If any validation error occurs an
  * exception will be thrown. If the data is successfully validated it will be available in the output variable.
- * @code (`shield:validate-data` <output-var> <input-object> <model|data-descriptors...>)
+ * @code (`shield:validate-data` <output-var> <input-object> <model | `using` data-descriptors...>)
  */
 Expr::register('_shield:validate-data', function($parts, $data)
 {
