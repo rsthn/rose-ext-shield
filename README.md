@@ -85,6 +85,6 @@ Creates and returns a new validation model to be re-used later with `shield:vali
 ; model_45ef12
 ```
 
-### (`shield:validate-data` \<output-var> \<input-object> \<model|data-descriptors...>)
+### (`shield:validate-data` \<output-var> \<input-object> \<model | `using` data-descriptors...>)
 Validates the fields in the input data using the specified data rules. If any validation error occurs an
 exception will be thrown. If the data is successfully validated it will be available in the output variable.

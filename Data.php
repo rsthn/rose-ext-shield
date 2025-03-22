@@ -25,7 +25,9 @@ class Data extends Rule
 {
     public static $IGNORE = null;
 
-    public function getName ()
+    private $flattened = null;
+
+    public function getName()
     {
         return 'data';
     }
@@ -59,8 +61,7 @@ class Data extends Rule
 
     protected static function flatten ($node, $ctx)
     {
-        $type = \Rose\typeOf ($node, true);
-
+        $type = \Rose\typeOf($node, true);
         if ($type === 'Rose\\Arry')
         {
             $node = $node->map(function($item) use ($ctx) {
@@ -80,7 +81,6 @@ class Data extends Rule
                     for ($i = 0; $i < $node->data->length() && $mode != -1; $i++)
                     {
                         $item = $node->data->get($i);
-
                         switch ($mode)
                         {
                             case 0:
@@ -105,7 +105,7 @@ class Data extends Rule
                                     }
                                 }
                                 else
-                                    throw new Error('Expected a type name');
+                                    throw new Error('Expected a type name: ' . $item);
 
                                 break;
 
@@ -504,7 +504,8 @@ class Data extends Rule
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
         try {
-            $flattened = self::flatten($this->value, $context);
+            if (!$this->flattened)
+                $this->flattened = self::flatten($this->value, $context);
         }
         catch (\Exception $e) {
             $errors->set($name, $e->getMessage());
@@ -513,7 +514,7 @@ class Data extends Rule
 
         try {
             $context->set('$root', $val);
-            $this->checkType($flattened, $val, $name, false, $context, $val, $input, $name, $errors);
+            $this->checkType($this->flattened, $val, $name, false, $context, $val, $input, $name, $errors);
         }
         finally {
             $context->remove('$root');
