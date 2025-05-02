@@ -590,6 +590,7 @@ class_exists('Rose\Ext\Shield\MinLength');
 class_exists('Rose\Ext\Shield\MaxLength');
 class_exists('Rose\Ext\Shield\Length');
 class_exists('Rose\Ext\Shield\Pattern');
+class_exists('Rose\Ext\Shield\NotPattern');
 class_exists('Rose\Ext\Shield\Set');
 class_exists('Rose\Ext\Shield\Check');
 class_exists('Rose\Ext\Shield\Default_');
