@@ -383,11 +383,13 @@ class Data extends Rule
 
                 // TODO: Fix that any custom created vars at the $out level will be lost.
                 $tmp = new Map();
+                $out = new Map();
                 $tmpId = $this->getTmpId();
-                $tmp->set($tmpId, $value);
+                if ($input->has($rel_key))
+                    $tmp->set($tmpId, $value);
 
                 $_errors = new Map();
-                Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $tmp, $ctx, $_errors, $input, $rel_root);
+                Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $out, $ctx, $_errors, $input, $rel_root);
                 if ($_errors->length) {
                     $_errors->forEach(function($value, $key) use($errors, $path, $tmpId) {
                         if (Text::startsWith($key, $tmpId))
@@ -396,10 +398,10 @@ class Data extends Rule
                     throw new SkipError();
                 }
 
-                if (!$tmp->has($tmpId))
+                if (!$out->has($tmpId))
                     throw new IgnoreField();
 
-                self::updateValue($value, $ctx, $tmp->get($tmpId));
+                self::updateValue($value, $ctx, $out->get($tmpId));
                 break;
 
             case 'value':
@@ -475,11 +477,13 @@ class Data extends Rule
         {
             // TODO: Fix that any custom created vars at the $out level will be lost.
             $tmp = new Map();
+            $out = new Map();
             $tmpId = $this->getTmpId();
-            $tmp->set($tmpId, $value);
+            if ($input->has($rel_key))
+                $tmp->set($tmpId, $value);
 
             $_errors = new Map();
-            Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $tmp, $ctx, $_errors, $input, $rel_root);
+            Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $out, $ctx, $_errors, $input, $rel_root);
             if ($_errors->length) {
                 $_errors->forEach(function($value, $key) use($errors, $path, $tmpId) {
                     if (Text::startsWith($key, $tmpId))
@@ -492,10 +496,10 @@ class Data extends Rule
             if ($node->get(1)[1] !== '')
                 $rel_key = $node->get(1)[1];
 
-            if (!$tmp->has($tmpId))
+            if (!$out->has($tmpId))
                 throw new IgnoreField();
 
-            self::updateValue($value, $ctx, $tmp->get($tmpId));
+            self::updateValue($value, $ctx, $out->get($tmpId));
         }
 
         if ($errors->length() != $num_initial_errors)

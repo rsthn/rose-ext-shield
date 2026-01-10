@@ -26,9 +26,11 @@ class Type extends Rule
 
         $tmpId = $this->getTmpId();
         $tmp = new Map();
-        $tmp->set($tmpId, $val);
-        $val = Shield::validateValue($value, $tmpId, $tmpId, $tmp, $tmp, $context, $_errors);
+        $out = new Map();
+        if ($input->has($name))
+            $tmp->set($tmpId, $val);
 
+        $val = Shield::validateValue($value, $tmpId, $tmpId, $tmp, $out, $context, $_errors);
         if ($_errors->length) {
             $_errors->forEach(function($value, $key) use($name, $errors, $tmpId) {
                 if (Text::startsWith($key, $tmpId))
@@ -37,10 +39,10 @@ class Type extends Rule
             throw new Error('');
         }
 
-        if (!$tmp->has($tmpId))
+        if (!$out->has($tmpId))
             throw new IgnoreField();
 
-        $val = $tmp->get($tmpId);
+        $val = $out->get($tmpId);
         return true;
     }
 };
