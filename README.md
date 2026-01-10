@@ -25,8 +25,8 @@ Ensures the request's body is at least the specified number of bytes. Fails with
 Ensures the request's body does not exceed the specified number of bytes. Fails with 422/@messages.request_body_too_large when so.
 
 ### (`shield:ruleset` \<ruleset-name> \<rules...>)
-Registers a set of validation rules with the given name. This can later be used in
-`shield:validate` using the `use \<ruleset-name>` rule.
+Registers a set of validation rules with the given name. This can later be used by name
+from the `use \<ruleset-name>` rule.
 ```lisp
 (shield:ruleset "email"
   max-length 256
@@ -35,7 +35,7 @@ Registers a set of validation rules with the given name. This can later be used 
 ```
 
 ### (`shield:model` \<name> \<data-descriptor>)
-Registers a new validation model with the given name to be used later with `shield:validate`.
+Registers a validation model with the given name to be used later with `shield:validate`.
 ```lisp
 (shield:model "Model1"
    (object
@@ -51,18 +51,18 @@ Registers a new validation model with the given name to be used later with `shie
 ```
 
 ### (`shield:validate` [\<output-var>] \<input-object> \<model-names>...)
-Validates the input data using the specified models. If any validation error occurs an exception will be thrown. If
-the data is successfully validated it will be returned or placed in the specified output variable.
+Validates the input data using the specified models. If any validation error occurs an exception will be thrown.
+<br/>If the data is successfully validated it will be returned or placed in the specified output variable.
 ```lisp
 (shield:validate (gateway.body) "Model1")
 ```
 
-### (`shield:validate-data` [\<output-var>] \<input-object> \<data-descriptor>)
+### (`shield:validate-data` [\<output-var>] \<input-object> \<data-descriptor>) _(deprecated)_
 Validates the input data using the specified rules. If any validation error occurs an exception will be thrown. If
 the data is successfully validated it will be returned or placed in the specified output variable.
 <br/>
-<br/>Note: This function will be deprecated in the future, use `shield:validate` with the related functions 
-<br/>`shield:model` and `shield:ruleset` instead.
+<br/>NOTE: This function has been deprecated and will be removed in the future, use `shield:validate` with the related
+<br/>functions `shield:model` and `shield:ruleset` instead.
 ```lisp
 (shield:validate-data "form" (gateway.body)
    (object
@@ -76,11 +76,15 @@ the data is successfully validated it will be returned or placed in the specifie
 )
 ```
 
-### (`shield:begin`) \<small>[deprecated]\</small>
+### (`shield:begin`) _(deprecated)_
 Begins quiet validation mode. All validation errors will be accumulated, and should later be retrieved by calling `shield:end`,
 this is useful to batch multiple validation blocks at once.
 
-### (`shield:validate-fields` [output-var] \<field-descriptors...>)
+### (`shield:end` [automatic=true]) _(deprecated)_
+Ends quiet validation mode, if there are any errors and `automatic` is set to `true` (default), then Wind::R_VALIDATION_ERROR will
+be thrown, otherwise, the error map will just be returned.
+
+### (`shield:validate-fields` [output-var] \<field-descriptors...>) _(deprecated)_
 Validates the fields in the gateway request. Any error will be reported, and the validated object will be available in the
 global context or in the output variable (if provided) when validation succeeds.
 <br/>
