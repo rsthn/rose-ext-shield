@@ -41,7 +41,7 @@ class Data extends Rule
             case 'object':
             case 'array':
             case 'vector':
-            case 'type':
+            case 'type': case 'use':
             case 'value':
             case 'rules':
 
@@ -91,7 +91,7 @@ class Data extends Rule
                                         case 'object': $mode = 1; break;
                                         case 'array': $mode = 3; break;
                                         case 'vector': $mode = 4; break;
-                                        case 'type': $mode = 5; break;
+                                        case 'type': case 'use': $mode = 5; break;
                                         case 'value': $mode = 6; break;
                                         case 'rules': $mode = 7; break;
                                         case 'boolean': $mode = 7; break;
@@ -149,7 +149,7 @@ class Data extends Rule
                                     $node->data->set($i, Expr::value($item, $ctx));
                                 break;
 
-                            case 5: // Type name (type <typeName>)
+                            case 5: // Use ruleset (use <ruleset-name>)
                                 $node->data->set($i, Expr::value($item, $ctx));
                                 $mode = -1;
                                 break;
@@ -181,16 +181,13 @@ class Data extends Rule
         return $node;
     }
 
-    public function getIdentifier()
-    {
+    public function getIdentifier() {
         return '';
     }
 
-    private static function updateValue (&$value, $ctx, $new_value)
-    {
+    private static function updateValue (&$value, $ctx, $new_value) {
         if ($value === $ctx->get('$root'))
             $ctx->set('$root', $new_value);
-
         $value = $new_value;
     }
 
@@ -202,7 +199,7 @@ class Data extends Rule
             if (\Rose\isString($value))
                 self::updateValue($value, $ctx, Text::trim($value));
 
-            if ($node === '...' || $node === '*' || $node === 'any')
+            if ($node === '...' || $node === '*')
                 return;
 
             $tmp = (string)$value;
@@ -226,7 +223,7 @@ class Data extends Rule
                 $name = 'pattern';
             }
 
-            if (!Regex::_matches ($regex, $value)) {
+            if (!Regex::_matches($regex, $value)) {
                 $errors->set($path, $name);
                 throw new SkipError();
             }
@@ -304,6 +301,9 @@ class Data extends Rule
                 self::updateValue($value, $ctx, $output);
                 $rule = $node->get(1);
 
+                if ($node->length() > 2)
+                    throw new \Exception("array rule expects only one argument");
+
                 if (self::$IGNORE === null)
                     self::$IGNORE = new Map();
 
@@ -356,8 +356,7 @@ class Data extends Rule
                 $output = new Arry();
                 self::updateValue($value, $ctx, $output);
 
-                for ($i = 1; $i < $node->length(); $i++)
-                {
+                for ($i = 1; $i < $node->length(); $i++) {
                     try {
                         $cpath = $path !== '' ? ($path . '.' . ($i-1)) : ($i-1);
                         $val = $input_value->get($i-1);
@@ -378,29 +377,29 @@ class Data extends Rule
                 }
                 break;
 
-            case 'type':
+            case 'type': case 'use':
                 if ($is_optional && $value === null)
                     throw new IgnoreField();
 
                 // TODO: Fix that any custom created vars at the $out level will be lost.
                 $tmp = new Map();
-                $tmp->set('tmp', $value);
+                $tmpId = $this->getTmpId();
+                $tmp->set($tmpId, $value);
 
                 $_errors = new Map();
-                Shield::validateValue ($node->get(1), 'tmp', 'tmp', $tmp, $tmp, $ctx, $_errors);
-                if ($_errors->length)
-                {
-                    $_errors->forEach(function($value, $key) use($errors, $path) {
-                        if (Text::startsWith($key, 'tmp'))
-                            $errors->set($path.Text::substring($key, 3), $value);
+                Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $tmp, $ctx, $_errors, $input, $rel_root);
+                if ($_errors->length) {
+                    $_errors->forEach(function($value, $key) use($errors, $path, $tmpId) {
+                        if (Text::startsWith($key, $tmpId))
+                            $errors->set($path.Text::substring($key, Text::length($tmpId)), $value);
                     });
                     throw new SkipError();
                 }
 
-                if (!$tmp->has('tmp'))
+                if (!$tmp->has($tmpId))
                     throw new IgnoreField();
 
-                self::updateValue($value, $ctx, $tmp->get('tmp'));
+                self::updateValue($value, $ctx, $tmp->get($tmpId));
                 break;
 
             case 'value':
@@ -474,27 +473,29 @@ class Data extends Rule
 
         if ($validate === true && $node->length() > 1)
         {
+            // TODO: Fix that any custom created vars at the $out level will be lost.
+            $tmp = new Map();
+            $tmpId = $this->getTmpId();
+            $tmp->set($tmpId, $value);
+
             $_errors = new Map();
-            Shield::validateValue ($node->get(1), $rel_key, $rel_key, $input, $rel_root, $ctx, $_errors);
+            Shield::validateValue($node->get(1), $tmpId, $tmpId, $tmp, $tmp, $ctx, $_errors, $input, $rel_root);
             if ($_errors->length) {
-                $path = Text::substring($path, 0, -Text::length((string)$rel_key));
-                $_errors->forEach(function($value, $key) use($errors, $path) {
-                    $errors->set($path.$key, $value);
+                $_errors->forEach(function($value, $key) use($errors, $path, $tmpId) {
+                    if (Text::startsWith($key, $tmpId))
+                        $errors->set($path.Text::substring($key, Text::length($tmpId)), $value);
                 });
                 throw new SkipError();
             }
-
-            $ignore_field = !$rel_root->has($rel_key);
-            $val = $rel_root->get($rel_key);
-            $rel_root->remove($rel_key);
-            self::updateValue($value, $ctx, $val);
 
             // Get final output name provided by "output xxx" rule (if any).
             if ($node->get(1)[1] !== '')
                 $rel_key = $node->get(1)[1];
 
-            if ($ignore_field)
+            if (!$tmp->has($tmpId))
                 throw new IgnoreField();
+
+            self::updateValue($value, $ctx, $tmp->get($tmpId));
         }
 
         if ($errors->length() != $num_initial_errors)
@@ -527,11 +528,11 @@ class Data extends Rule
 Shield::registerRule('data', 'Rose\Ext\Shield\Data');
 
 /*
-    (shield:type my_rule
+    (shield:ruleset my_rule
         required true
         data (array (object
-            count "integer"
-            type "text"
+            count (integer)
+            type "type_regex"
         ))
     )
 
@@ -539,23 +540,27 @@ Shield::registerRule('data', 'Rose\Ext\Shield\Data');
         json-load "POST"
         data (object
                 id "integer"
-                desc "text"
+                desc "string"
                 mode (value "MODE_1")
-                value any
+                value *
                 second_value *
                 answers (array (object
-                    count "integer"
-                    type "text"
+                    count (integer)
+                    type (string)
                     desc "text"
                 ))
-                other_answers (type my_rule)
-                colors (array ...)
+                other_answers (use "my_rule")
+                colors (use "my_colors_model")
                 options (object ...)
 
                 some_value (boolean)
                 some_value (integer)
-                some_value (number default 25.5)
-                some_value (string max-length 10)
+                some_value (number
+                                default 25.5)
+                some_value (string
+                                max-length 10
+                                pattern email
+                            )
                 some_value (null)
                 some_value (rules
                     required true

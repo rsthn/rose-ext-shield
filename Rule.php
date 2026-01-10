@@ -13,6 +13,7 @@ abstract class Rule
     protected $identifier = null;
     protected $value;
     protected $reportedName = null;
+    static $counter = 0;
 
     public function __construct ($value, $baseIdentifier=null) {
         $this->value = $value;
@@ -40,6 +41,10 @@ abstract class Rule
     public function getIdentifier() {
         $val = Text::toString($this->baseIdentifier ?? $this->identifier);
         return $val !== '' ? ($val[0] === '@' ? Text::substring($val, 1) : $this->getName() . ':' . $val) : $this->getName();
+    }
+
+    public function getTmpId() {
+        return '_' . self::$counter++ . '_';
     }
 
     public abstract function validate ($name, &$value, $input, $output, $context, $errors);

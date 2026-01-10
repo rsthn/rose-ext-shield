@@ -10,19 +10,20 @@ use Rose\Text;
 
 class UniqueItems extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'unique-items';
     }
 
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
+        if (!\Rose\bool($this->getValue($context)))
+            return true;
+
         $type = \Rose\typeOf($val);
         if ($type !== 'Rose\Arry')
             return false;
 
-        $val = $val->unique();
-        return true;
+        return $val->unique()->length() == $val->length();
     }
 };
 

@@ -11,13 +11,11 @@ use Rose\Map;
 
 class Type extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'type';
     }
 
-    public function getIdentifier()
-    {
+    public function getIdentifier() {
         return '';
     }
 
@@ -26,26 +24,26 @@ class Type extends Rule
         $value = $this->getValue($context);
         $_errors = new Map();
 
+        $tmpId = $this->getTmpId();
         $tmp = new Map();
-        $tmp->set('tmp', $val);
-        $val = Shield::validateValue ($value, 'tmp', 'tmp', $tmp, $tmp, $context, $_errors);
+        $tmp->set($tmpId, $val);
+        $val = Shield::validateValue($value, $tmpId, $tmpId, $tmp, $tmp, $context, $_errors);
 
-        if ($_errors->length)
-        {
-            $_errors->forEach(function($value, $key) use($name, $errors) {
-                if (Text::startsWith($key, 'tmp'))
-                    $errors->set($name, $value);
+        if ($_errors->length) {
+            $_errors->forEach(function($value, $key) use($name, $errors, $tmpId) {
+                if (Text::startsWith($key, $tmpId))
+                    $errors->set($name.Text::substring($key, Text::length($tmpId)), $value);
             });
-
             throw new Error('');
         }
 
-        if (!$tmp->has('tmp'))
+        if (!$tmp->has($tmpId))
             throw new IgnoreField();
 
-        $val = $tmp->get('tmp');
+        $val = $tmp->get($tmpId);
         return true;
     }
 };
 
 Shield::registerRule('type', 'Rose\Ext\Shield\Type');
+Shield::registerRule('use', 'Rose\Ext\Shield\Type');

@@ -40,9 +40,14 @@ class ValidationModel
 class Shield
 {
     /**
-     * Registered field definitions.
+     * Registered rulesets.
      */
-    public static $fields;
+    public static $rulesets;
+
+    /**
+     * Registered models;
+     */
+    public static $models;
 
     /**
      * Registered validation rules.
@@ -59,7 +64,8 @@ class Shield
      */
     public static function init()
     {
-        self::$fields = new Map();
+        self::$rulesets = new Map();
+        self::$models = new Map();
         self::$rules = new Map();
         self::$errors = null;
     }
@@ -119,38 +125,33 @@ class Shield
     }
 
     /**
-     * Registers a field descriptor.
-     */
-    public static function registerDescriptor (string $name, array $desc)
-    {
-        self::$fields->set($name, $desc);
-    }
-
-    /**
      * Returns an error message from the `messages` strings.
      */
-    public static function getMessage ($id)
-    {
+    public static function getMessage ($id) {
         return Strings::get('@messages.'.$id);
     }
 
     /**
      * Validates a value.
      */
-    public static function validateValue ($desc, $input_name, $output_name, $input, $output, \Rose\Map $context, \Rose\Map $errors)
+    public static function validateValue ($desc, $input_name, $output_name, $input, $output, \Rose\Map $context, \Rose\Map $errors, $input_override = null, $output_override = null)
     {
-        if (\Rose\isString($desc))
-        {
+        if (\Rose\isString($desc)) {
             $name = $desc;
-            $desc = self::$fields->get($desc);
-            if (!$desc) throw new ArgumentError ('Undefined validation descriptor: '.$name);
+            $desc = self::$rulesets->get($name);
+            if (!$desc) {
+                $desc = self::$models->get($name);
+                if (!$desc)
+                    throw new Error('undefined ruleset: '.$name);
+                $desc = $desc->descriptor;
+            }
         }
 
         $_out = $context->get('$out');
         $_in = $context->get('$in');
         $_val = $context->get('$');
-        $context->set('$out', $output);
-        $context->set('$in', $input);
+        $context->set('$out', $output_override ?? $output);
+        $context->set('$in', $input_override ?? $input);
 
         $input_name = $input_name ?? $desc[0];
         $output_name = $output_name ?? $desc[1];
@@ -165,8 +166,7 @@ class Shield
 
         foreach ($desc[2] as $rule)
         {
-            if ($unallowedMap === true)
-            {
+            if ($unallowedMap === true) {
                 if (!$allowedMap->has($rule->getName()))
                     continue;
                 $allowedMap = $unallowedMap = null;
@@ -182,8 +182,7 @@ class Shield
                     continue;
                 }
 
-                if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context, $_errors))
-                {
+                if ($rule->validate($input_name, $output->__nativeArray[$output_name], $input, $output, $context, $_errors)) {
                     if ($rule->getReportedName() !== null)
                         $report_as = $rule->getReportedName();
                     continue;
@@ -201,14 +200,18 @@ class Shield
                 $remove = true;
                 break;
             }
-            catch (\Exception $e)
-            {
+            catch (\Exception $e) {
+                // Empty identifier is used for rules that forward errors.
                 $tmp = $rule->getIdentifier();
-                if ($tmp === '')
+                if ($tmp === '') {
+                    $msg = $e->getMessage();
+                    // Non-empty error message will still be added to the report.
+                    if ($msg)
+                        $errors->set($report_as, $msg);
                     $errors->merge($_errors, true);
+                }
                 else
                     $errors->set($report_as, $tmp ? '('.$tmp.') '.$e->getMessage() : $e->getMessage());
-
                 $remove = true;
                 break;
             }
@@ -362,7 +365,7 @@ Expr::register('shield:body-max-size', function($args, $parts, $data) {
 
 /**
  * Returns a field descriptor.
- * @code (`shield:field` <output-name> [rules...])
+ * @deprecated code (`shield:field` <output-name> [rules...])
  * @example
  * (shield:field username
  *      required true
@@ -384,7 +387,7 @@ Expr::register('_shield:field', function($parts, $data)
 
 /**
  * Registers a type validation descriptor to be used by name in the `type` rules.
- * @code (`shield:type` <type-name> <rules...>)
+ * @deprecated code (`shield:type` <type-name> <rules...>)
  * @example
  * (shield:type "email"
  *   max-length 256
@@ -410,18 +413,242 @@ Expr::register('_shield:type', function($parts, $data)
 
         if ($tmp->length == 1 && ($tmp->get(0)->type !== 'template' && $tmp->get(0)->type !== 'string'))
             $tmp = Expr::value($tmp, $data);
-            
-        $rules->push(new Arry ([$key, $tmp], false));
+
+        $rules->push(new Arry([$key, $tmp], false));
     }
 
-    Shield::registerDescriptor ($name, Shield::getDescriptor($name, $rules, $data));
+    Shield::$rulesets->set($name, Shield::getDescriptor($name, $rules, $data));
+    return null;
+});
+
+/**
+ * Registers a set of validation rules with the given name. This can later be used by name
+ * from the `use <ruleset-name>` rule.
+ * @code (`shield:ruleset` <ruleset-name> <rules...>)
+ * @example
+ * (shield:ruleset "email"
+ *   max-length 256
+ *   pattern email
+ * )
+ */
+Expr::register('_shield:ruleset', function($parts, $data)
+{
+    $name = Expr::value($parts->get(1), $data);
+
+    if (!\Rose\isString($name))
+        throw new ArgumentError('shield:ruleset expects \'ruleset-name\' parameter to be a string.');
+
+    $rules = new Arry();
+    for ($i = 2; $i < $parts->length(); $i += 2)
+    {
+        $key = Expr::value($parts->get($i), $data);
+        if (substr($key, -1) === ':') // TODO: Deprecate using ':' to separate rule name and value
+            $key = substr($key, 0, strlen($key)-1);
+
+        $tmp = $parts->get($i+1);
+        if ($tmp->length == 1 && ($tmp->get(0)->type !== 'template' && $tmp->get(0)->type !== 'string'))
+            $tmp = Expr::value($tmp, $data);
+
+        $rules->push(new Arry([$key, $tmp], false));
+    }
+
+    Shield::$rulesets->set($name, Shield::getDescriptor($name, $rules, $data));
+    return null;
+});
+
+/**
+ * Registers a validation model with the given name to be used later with `shield:validate`.
+ * @code (`shield:model` <name> <data-descriptor>)
+ * @example
+ * (shield:model "Model1"
+ *    (object
+ *       "username" (string)
+ *       "password" (string)
+ *       "email" (rules
+ *           required true
+ *           pattern email
+ *           use "verify-unique"
+ *        )
+ *    )
+ * )
+ */
+Expr::register('_shield:model', function($parts, $data) {
+    $type = $parts->get(1)->get(0)->type;
+    $name = null;
+    if ($type === "string" || $type === "identifier")
+        $name = Expr::value($parts->get(1), $data);
+
+    $i = $name === null ? 0 : 1;
+    $parts->set($i, 'data');
+    $desc = Shield::parseDescriptor($parts, $data, $i);
+    $desc = Shield::getDescriptor('', $desc, $data);
+
+    $model = new ValidationModel($desc);
+    if (!$name) return $model;
+
+    Shield::$models->set($name, $model);
+    return null;
+});
+
+
+/**
+ * Validates the input data using the specified models. If any validation error occurs an exception will be thrown.
+ * If the data is successfully validated it will be returned or placed in the specified output variable.
+ * @code (`shield:validate` [<output-var>] <input-object> <model-names>...)
+ * @example
+ * (shield:validate (gateway.body) "Model1")
+ */
+Expr::register('_shield:validate', function($parts, $data)
+{
+    $name = null;
+    $start = 1;
+    $type = $parts->get(1)->get(0)->type;
+    if ($type === "string" || $type === "identifier") {
+        $name = Expr::value($parts->get(1), $data);
+        $start = 2;
+    }
+
+    $inputData = new Map([ '' => Expr::value($parts->get($start), $data) ]);
+
+    $desc = [];
+    for ($i = $start+1; $i < $parts->length(); $i++)
+    {
+        $type = $parts->get($i)->get(0)->type;
+        if ($type === "string" || $type === "identifier")
+            $model = Shield::$models->get(Expr::value($parts->get($i), $data));
+        else
+            $model = Expr::value($parts->get($i), $data);
+
+        if (!($model instanceof ValidationModel))
+            throw new ArgumentError ('shield:validate expects a ValidationModel object');
+
+        $desc[] = $model->descriptor;
+    }
+
+    $outputData = new Map();
+    $errors = Shield::$errors != null ? Shield::$errors : new Map();
+    $data->set('formData', $outputData);
+
+    $output = null;
+    foreach ($desc as $_desc) {
+        Shield::validateValue($_desc, null, null, $inputData, $outputData, $data, $errors);
+        $newOutput = $outputData->get('');
+        if ($output === null)
+            $output = $newOutput;
+        else if ($newOutput !== null)
+            $output->merge($newOutput, true);
+    }
+
+    if ($errors !== Shield::$errors && $errors->length != 0) {
+        if ($errors->has(''))
+            throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get('') ]);
+        else
+            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+    }
+
+    $data->remove('formData');
+
+    if ($name === null)
+        return $output;
+
+    $data->set($name, $output);
+    return null;
+});
+
+/**
+ * Validates the input data using the specified rules. If any validation error occurs an exception will be thrown. If
+ * the data is successfully validated it will be returned or placed in the specified output variable.
+ *
+ * NOTE: This function has been deprecated and will be removed in the future, use `shield:validate` with the related
+ * functions `shield:model` and `shield:ruleset` instead.
+ * @code (`shield:validate-data` [<output-var>] <input-object> <data-descriptor>) _(deprecated)_
+ * @example
+ * (shield:validate-data "form" (gateway.body)
+ *    (object
+ *       "username" (string)
+ *       "password" (string)
+ *       "email" (rules
+ *           required true
+ *           pattern email
+ *        )
+ *    )
+ * )
+ */
+Expr::register('_shield:validate-data', function($parts, $data)
+{
+    $name = null;
+    $start = 1;
+    $type = $parts->get(1)->get(0)->type;
+    if ($type === "string" || $type === "identifier") {
+        $name = Expr::value($parts->get(1), $data);
+        $start = 2;
+    }
+
+    $inputData = new Map([ '' => Expr::value($parts->get($start), $data) ]);
+
+    if (Expr::isIdentifier($parts, $start+1, 'using')) {
+        $desc = [];
+        $multi = true;
+        for ($i = $start+2; $i < $parts->length(); $i++)
+        {
+            $type = $parts->get($i)->get(0)->type;
+            if ($type === "string" || $type === "identifier")
+                $model = Shield::$models->get(Expr::value($parts->get($i), $data));
+            else
+                $model = Expr::value($parts->get($i), $data);
+
+            if (!($model instanceof ValidationModel))
+                throw new ArgumentError ('shield:validate-data expects a ValidationModel object');
+
+            $desc[] = $model->descriptor;
+        }
+    }
+    else {
+        $multi = false;
+        $parts->set($start, 'data');
+        $desc = Shield::getDescriptor('', Shield::parseDescriptor($parts, $data, $start), $data);
+    }
+
+    $outputData = new Map();
+    $errors = Shield::$errors != null ? Shield::$errors : new Map();
+    $data->set('formData', $outputData);
+
+    if ($multi === true) {
+        $output = null;
+        foreach ($desc as $_desc) {
+            Shield::validateValue($_desc, null, null, $inputData, $outputData, $data, $errors);
+            $newOutput = $outputData->get('');
+            if ($output === null)
+                $output = $newOutput;
+            else if ($newOutput !== null)
+                $output->merge($newOutput, true);
+        }
+    }
+    else {
+        Shield::validateValue($desc, null, null, $inputData, $outputData, $data, $errors);
+        $output = $outputData->get('');
+    }
+
+    if ($errors !== Shield::$errors && $errors->length != 0) {
+        if ($errors->has(''))
+            throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get('') ]);
+        else
+            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
+    }
+
+    $data->remove('formData');
+
+    if ($name === null)
+        return $output;
+
+    $data->set($name, $output);
     return null;
 });
 
 /**
  * Begins quiet validation mode. All validation errors will be accumulated, and should later be retrieved by calling `shield:end`,
  * this is useful to batch multiple validation blocks at once.
- * @code (`shield:begin`)
+ * @code (`shield:begin`) _(deprecated)_
  */
 Expr::register('shield:begin', function($args, $parts, $data) {
     Shield::$errors = new Map();
@@ -430,7 +657,7 @@ Expr::register('shield:begin', function($args, $parts, $data) {
 /**
  * Ends quiet validation mode, if there are any errors and `automatic` is set to `true` (default), then Wind::R_VALIDATION_ERROR will
  * be thrown, otherwise, the error map will just be returned.
- * @code (`shield:end` [automatic=true])
+ * @code (`shield:end` [automatic=true]) _(deprecated)_
  */
 Expr::register('shield:end', function($args, $parts, $data)
 {
@@ -449,37 +676,36 @@ Expr::register('shield:end', function($args, $parts, $data)
 /**
  * Validates the fields in the gateway request. Any error will be reported, and the validated object will be available in the
  * global context or in the output variable (if provided) when validation succeeds.
- * NOTE: This is a legacy function, use the replacement `shield:validate-data` when possible.
- * @code (`shield:validate` [output-var] <field-descriptors...>)
+ *
+ * NOTE: This function is provided for legacy support. If your previous shield version was 2.x please replace all calls
+ * to `shield:validate` with `shield:validate-fields` as this function has the same behavior.
+ * @code (`shield:validate-fields` [output-var] <field-descriptors...>) _(deprecated)_
  * @example
- * (shield:validate form
- *   (shield:field name
- *     required true
- *     max-length 8
- *   )
- *   (shield:field email
- *    required true
- *    pattern email
- *   )
+ * (shield:validate-fields form
+ *     (shield:field name
+ *         required true
+ *         max-length 8
+ *     )
+ *     (shield:field email
+ *         required true
+ *         pattern email
+ *     )
  * )
  */
-Expr::register('shield:validate', function($args, $parts, $data)
+Expr::register('shield:validate-fields', function($args, $parts, $data)
 {
     $inputData = Gateway::getInstance()->request;
     $outputData = $data;
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
 
     $i = $args->get(1);
-    if (\Rose\isString($i) && Shield::$fields->get($i) == null)
-    {
-        if ($i !== 'global')
-        {
+    if (\Rose\isString($i) && Shield::$rulesets->get($i) === null) {
+        if ($i !== 'global') {
             if ($data->has($i))
                 $outputData = $data->get($i);
             else
                 $data->set($i, $outputData = new Map());
         }
-
         $i = 2;
     }
     else
@@ -488,7 +714,7 @@ Expr::register('shield:validate', function($args, $parts, $data)
     $data->set('formData', $outputData);
 
     for (; $i < $args->length; $i++)
-        Shield::validateValue ($args->get($i), null, null, $inputData, $outputData, $data, $errors);
+        Shield::validateValue($args->get($i), null, null, $inputData, $outputData, $data, $errors);
 
     if ($errors !== Shield::$errors && $errors->length != 0)
         throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
@@ -496,90 +722,6 @@ Expr::register('shield:validate', function($args, $parts, $data)
     $data->remove('formData');
     return null;
 });
-
-/**
- * Creates and returns a new validation model to be re-used later with `shield:validate-data`.
- * @code (`shield:model` <data-descriptors...>)
- * @example
- * (shield:model
- *    (object
- *       "username" (string)
- *       "password" (string)
- *       "email" (rules
- *           required true
- *           pattern email
- *        )
- *    )
- * )
- * ; model_45ef12
- */
-Expr::register('_shield:model', function($parts, $data)
-{
-    $parts->set(0, 'data');
-    $desc = Shield::parseDescriptor($parts, $data, 0);
-    $desc = Shield::getDescriptor('', $desc, $data);
-    return new ValidationModel($desc);
-});
-
-
-/**
- * Validates the fields in the input data using the specified data rules. If any validation error occurs an
- * exception will be thrown. If the data is successfully validated it will be available in the output variable.
- * @code (`shield:validate-data` <output-var> <input-object> <model | `using` data-descriptors...>)
- */
-Expr::register('_shield:validate-data', function($parts, $data)
-{
-    $name = Expr::value($parts->get(1), $data);
-    $inputData = new Map([ '' => Expr::value($parts->get(2), $data) ]);
-
-    if (Expr::isIdentifier($parts, 3, 'using')) {
-        $desc = [];
-        $multi = true;
-        for ($i = 4; $i < $parts->length(); $i++) {
-            $model = Expr::value($parts->get($i), $data);
-            if (!($model instanceof ValidationModel))
-                throw new ArgumentError ('shield:validate-data expects a ValidationModel object');
-            $desc[] = $model->descriptor;
-        }
-    }
-    else {
-        $multi = false;
-        $parts->set(2, 'data');
-        $desc = Shield::getDescriptor('', Shield::parseDescriptor($parts, $data, 2), $data);
-    }
-
-    $outputData = new Map();
-    $errors = Shield::$errors != null ? Shield::$errors : new Map();
-    $data->set('formData', $outputData);
-
-    if ($multi === true) {
-        $output = null;
-        foreach ($desc as $_desc) {
-            Shield::validateValue ($_desc, null, null, $inputData, $outputData, $data, $errors);
-            $newOutput = $outputData->get('');
-            if ($output === null)
-                $output = $newOutput;
-            else if ($newOutput !== null)
-                $output->merge($newOutput, true);
-        }
-    }
-    else {
-        Shield::validateValue ($desc, null, null, $inputData, $outputData, $data, $errors);
-        $output = $outputData->get('');
-    }
-
-    if ($errors !== Shield::$errors && $errors->length != 0) {
-        if ($errors->has(''))
-            throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get('') ]);
-        else
-            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $errors ]);
-    }
-
-    $data->remove('formData');
-    $data->set($name, $output);
-    return null;
-});
-
 
 /* ****************************************************************************** */
 Shield::init();

@@ -10,16 +10,13 @@ use Rose\Text;
 
 class MinValue extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'min-value';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
-    {
+    public function validate ($name, &$val, $input, $output, $context, $errors) {
         $value = $this->getValue($context);
         $this->identifier = $value;
-
         return (float)$val >= (float)$value;
     }
 };

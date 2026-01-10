@@ -9,8 +9,7 @@ use Rose\Text;
 
 class Required extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'required';
     }
 
@@ -18,8 +17,7 @@ class Required extends Rule
     {
         $value = $this->getValue($context);
 
-        if (\Rose\isString($val))
-        {
+        if (\Rose\isString($val)) {
             $val = Text::trim($val);
             $is_empty = Text::length($val) == 0;
         }
@@ -53,7 +51,6 @@ class Required extends Rule
             case 'true':
                 if ($is_empty)
                     return false;
-
                 break;
 
             case 'false':

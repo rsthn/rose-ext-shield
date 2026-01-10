@@ -9,8 +9,7 @@ use Rose\Text;
 
 class Ignore extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'ignore';
     }
 
