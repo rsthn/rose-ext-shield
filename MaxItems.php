@@ -6,24 +6,26 @@ use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 
 class MaxItems extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'max-items';
     }
 
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
-        $value = (int)$this->getValue($context);
-        $this->identifier = $value;
+        $value = $this->getValue($context);
+        if (!\Rose\isInteger($value) && !\Rose\isNumber($value))
+            throw new Error('reference value expected to be numeric');
 
         $type = \Rose\typeOf($val);
         if ($type !== 'Rose\Arry' && $type !== 'Rose\Map')
-            return false;
+            throw new Error('argument expected to be array or object');
 
+        $this->identifier = $value;
         return $val->length() <= $value;
     }
 };

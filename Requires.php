@@ -6,34 +6,37 @@ use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 
 class Requires extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'requires';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
+    public function validate($name, &$val, $input, $output, $context, $errors)
     {
-        $value = Text::split('|', $this->getValue($context));
+        $value = $this->getValue($context);
+        if (!\Rose\isString($value))
+            throw new Error('reference expected to be string');
+
+        $value = Text::split('|', $value);
         $this->identifier = $value->get(0);
 
         if ($output->has($value->get(0)))
             return true;
 
-        if ($value->length > 1)
-        switch ($value->get(1))
-        {
-            case 'error':
-                return false;
-
-            case 'stop':
-                throw new StopValidation();
-
-            case 'ignore':
-                \Rose\trace('[shield] using `requires` with `ignore` is the default behavior and no longer needed');
+        if ($value->has(1)) {
+            switch ($value->get(1)) {
+                case 'error':
+                    return false;
+                case 'stop':
+                    throw new StopValidation();
+                default:
+                    $this->identifier = null;
+                    throw new Error('invalid action for `requires` rule: ' . $value->get(1));
+            }
         }
 
         throw new IgnoreField();

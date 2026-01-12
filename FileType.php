@@ -10,8 +10,7 @@ use Rose\Text;
 
 class FileType extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'file-type';
     }
 
@@ -20,10 +19,10 @@ class FileType extends Rule
         $value = $this->getValue($context);
         $this->identifier = $value;
 
-        if (\Rose\typeOf($val) != 'Rose\\Map')
+        if (\Rose\typeOf($val) !== 'Rose\\Map')
             return false;
 
-        if ($val->error != 0)
+        if ($val->error !== 0)
             return false;
 
         $value = Text::split(',', $value)->map(function($i) { return Text::trim($i); });

@@ -9,8 +9,7 @@ use Rose\Text;
 
 class Block extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'block';
     }
 
@@ -18,8 +17,7 @@ class Block extends Rule
         return null;
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
-    {
+    public function validate ($name, &$val, $input, $output, $context, $errors) {
         $this->getValue($context);
         return true;
     }

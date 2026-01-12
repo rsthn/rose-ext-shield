@@ -9,13 +9,11 @@ use Rose\Text;
 
 class Set extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'set';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
-    {
+    public function validate($name, &$val, $input, $output, $context, $errors) {
         $val = $this->getValue($context);
         return true;
     }

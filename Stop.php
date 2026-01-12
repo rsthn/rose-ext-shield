@@ -5,20 +5,22 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 
 class Stop extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'stop';
     }
 
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
-        if (\Rose\bool($this->getValue($context)))
+        $value = $this->getValue($context);
+        if (!\Rose\isBool($value))
+            throw new Error('reference value expected to be bool');
+        if ($value)
             throw new StopValidation();
-
         return true;
     }
 };

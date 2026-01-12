@@ -5,6 +5,7 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 
 class Required extends Rule
@@ -16,6 +17,8 @@ class Required extends Rule
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
         $value = $this->getValue($context);
+        if ($value === true) $value = 'true';
+        if ($value === false) $value = 'false';
 
         if (\Rose\isString($val)) {
             $val = Text::trim($val);
@@ -24,11 +27,7 @@ class Required extends Rule
         else
             $is_empty = $val === null;
 
-        if ($value === true) $value = 'true';
-        if ($value === false) $value = 'false';
-
         $this->identifier = $value;
-
         switch ($value)
         {
             case 'true|null':
@@ -36,16 +35,13 @@ class Required extends Rule
                     $val = null;
                     throw new StopValidation();
                 }
-
                 break;
 
             case 'true|empty':
-                if ($is_empty)
-                {
+                if ($is_empty) {
                     $val = '';
                     throw new StopValidation();
                 }
-
                 break;
 
             case 'true':
@@ -54,10 +50,13 @@ class Required extends Rule
                 break;
 
             case 'false':
-            case 'true|ignore':
                 if ($is_empty)
                     throw new IgnoreField();
                 break;
+
+            default:
+                $this->identifier = null;
+                throw new Error('invalid action for `required` rule: ' . $value);
         }
 
         return true;

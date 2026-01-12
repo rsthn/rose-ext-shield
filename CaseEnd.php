@@ -8,6 +8,7 @@ use Rose\Ext\Shield;
 use Rose\Text;
 use Rose\Map;
 
+
 class CaseEnd extends Rule
 {
     public function getName() {

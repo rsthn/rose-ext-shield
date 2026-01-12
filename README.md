@@ -50,55 +50,16 @@ Registers a validation model with the given name to be used later with `shield:v
 )
 ```
 
-### (`shield:validate` [\<output-var>] \<input-object> \<model-names>...)
+### (`shield:validate` \<input-object> \<model-names>...)
 Validates the input data using the specified models. If any validation error occurs an exception will be thrown.
-<br/>If the data is successfully validated it will be returned or placed in the specified output variable.
 ```lisp
 (shield:validate (gateway.body) "Model1")
 ```
 
-### (`shield:validate-data` [\<output-var>] \<input-object> \<data-descriptor>) _(deprecated)_
-Validates the input data using the specified rules. If any validation error occurs an exception will be thrown. If
-the data is successfully validated it will be returned or placed in the specified output variable.
-<br/>
-<br/>NOTE: This function has been deprecated and will be removed in the future, use `shield:validate` with the related
-<br/>functions `shield:model` and `shield:ruleset` instead.
-```lisp
-(shield:validate-data "form" (gateway.body)
-   (object
-      "username" (string)
-      "password" (string)
-      "email" (rules
-          required true
-          pattern email
-       )
-   )
-)
-```
-
-### (`shield:begin`) _(deprecated)_
+### (`shield:begin`)
 Begins quiet validation mode. All validation errors will be accumulated, and should later be retrieved by calling `shield:end`,
 this is useful to batch multiple validation blocks at once.
 
-### (`shield:end` [automatic=true]) _(deprecated)_
+### (`shield:end` [automatic=true])
 Ends quiet validation mode, if there are any errors and `automatic` is set to `true` (default), then Wind::R_VALIDATION_ERROR will
 be thrown, otherwise, the error map will just be returned.
-
-### (`shield:validate-fields` [output-var] \<field-descriptors...>) _(deprecated)_
-Validates the fields in the gateway request. Any error will be reported, and the validated object will be available in the
-global context or in the output variable (if provided) when validation succeeds.
-<br/>
-<br/>NOTE: This function is provided for legacy support. If your previous shield version was 2.x please replace all calls
-<br/>to `shield:validate` with `shield:validate-fields` as this function has the same behavior.
-```lisp
-(shield:validate-fields form
-    (shield:field name
-        required true
-        max-length 8
-    )
-    (shield:field email
-        required true
-        pattern email
-    )
-)
-```

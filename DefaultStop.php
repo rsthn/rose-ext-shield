@@ -9,12 +9,11 @@ use Rose\Text;
 
 class DefaultStop extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'default-stop';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
+    public function validate($name, &$val, $input, $output, $context, $errors)
     {
         if (\Rose\isString($val))
             $val = Text::trim($val);

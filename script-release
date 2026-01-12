@@ -1,5 +1,7 @@
 #!rose :deploy
 
+RUN php test\\test.php
+
 ECHO {clr 92}Updating documentation ...{clr 0}
     RUN rose :vdocs Shield.php
 

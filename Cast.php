@@ -5,14 +5,14 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 use Rose\Arry;
 use Rose\Map;
 
 class Cast extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'cast';
     }
 
@@ -31,7 +31,7 @@ class Cast extends Rule
                 $val = (int)$val;
                 break;
 
-            case 'number':
+            case 'float':
                 $val = (double)$val;
                 break;
 
@@ -45,7 +45,7 @@ class Cast extends Rule
                 $val = new Arry([ $val ]);
                 break;
 
-            case 'object':
+            case 'object': case 'obj':
                 if (\Rose\typeOf($val) === 'Rose\Map')
                     break;
                 $val = new Map([ 'value' => $val ]);
@@ -56,7 +56,8 @@ class Cast extends Rule
                 break;
 
             default:
-                throw new Error('undefined_type: ' . $value);
+                $this->identifier = null;
+                throw new Error('invalid type: ' . $value);
         }
 
         return true;

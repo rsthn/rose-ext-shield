@@ -5,6 +5,7 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\StopValidation;
 use Rose\Ext\Shield\IgnoreField;
+use Rose\Errors\Error;
 use Rose\Ext\Shield;
 
 class Presence extends Rule
@@ -19,8 +20,8 @@ class Presence extends Rule
         $value = $this->getValue($context);
         if ($value === true) $value = 'true';
         if ($value === false) $value = 'false';
-        $this->identifier = $value;
 
+        $this->identifier = $value;
         switch ($value)
         {
             case 'true|null':
@@ -44,11 +45,14 @@ class Presence extends Rule
                     return false;
                 break;
 
-            case 'true|ignore':
             case 'false':
                 if (!$input->has($name))
                     throw new IgnoreField();
                 break;
+
+            default:
+                $this->identifier = null;
+                throw new Error('invalid action for `presence` rule: ' . $value);
         }
 
         return true;

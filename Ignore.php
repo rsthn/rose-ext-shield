@@ -5,6 +5,7 @@ namespace Rose\Ext\Shield;
 use Rose\Ext\Shield\Rule;
 use Rose\Ext\Shield\IgnoreField;
 use Rose\Ext\Shield;
+use Rose\Errors\Error;
 use Rose\Text;
 
 class Ignore extends Rule
@@ -13,11 +14,13 @@ class Ignore extends Rule
         return 'ignore';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
-    {
-        if (\Rose\bool($this->getValue($context)))
-            throw new IgnoreField();
+    public function validate($name, &$val, $input, $output, $context, $errors) {
+        $value = $this->getValue($context);
+        if (!\Rose\isBool($value))
+            throw new Error('reference value expected to be bool');
 
+        if ($value)
+            throw new IgnoreField();
         return true;
     }
 };

@@ -5,3 +5,5 @@ vendor/
 *.log
 *.tmp
 deploy.js
+composer.lock
+
