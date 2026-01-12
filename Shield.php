@@ -426,12 +426,11 @@ Expr::register('_shield:model', function($parts, $data) {
  */
 Expr::register('_shield:validate', function($parts, $data)
 {
-    $start = 1;
     $tmpId = '__';
-    $inputData = new Map([ $tmpId => Expr::value($parts->get($start), $data) ]);
+    $inputData = new Map([ $tmpId => Expr::value($parts->get(1), $data) ]);
 
     $desc = [];
-    for ($i = $start+1; $i < $parts->length(); $i++)
+    for ($i = 2; $i < $parts->length(); $i++)
     {
         $type = $parts->get($i)->get(0)->type;
         if ($type === "string" || $type === "identifier") {
@@ -455,30 +454,112 @@ Expr::register('_shield:validate', function($parts, $data)
     $outputData = new Map();
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
 
-    $output = null;
-    foreach ($desc as $_desc) {
-        Shield::validateValue($_desc, $tmpId, $inputData, $outputData, $data, $errors);
-        $newOutput = $outputData->get($tmpId);
-        if ($output === null)
-            $output = $newOutput;
-        else if ($newOutput !== null)
-            $output->merge($newOutput, true);
+    $_ctx = $data->get('$ctx');
+    $data->set('$ctx', $ctx);
+
+    try {
+        $output = null;
+        foreach ($desc as $_desc) {
+            Shield::validateValue($_desc, $tmpId, $inputData, $outputData, $data, $errors);
+            $newOutput = $outputData->get($tmpId);
+            if ($output === null)
+                $output = $newOutput;
+            else if ($newOutput !== null)
+                $output->merge($newOutput, true);
+        }
+
+        if ($errors !== Shield::$errors && $errors->length != 0) {
+            if ($errors->has($tmpId))
+                throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId) ]);
+
+            $_errors = new Map();
+            $errors->forEach(function($value, $key) use($_errors, $tmpId) {
+                if (Text::startsWith($key, $tmpId))
+                    $_errors->set(Text::substring($key, Text::length($tmpId)+1), $value);
+            });
+
+            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $_errors ]);
+        }
     }
-
-    if ($errors !== Shield::$errors && $errors->length != 0) {
-        if ($errors->has($tmpId))
-            throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId) ]);
-
-        $_errors = new Map();
-        $errors->forEach(function($value, $key) use($_errors, $tmpId) {
-            if (Text::startsWith($key, $tmpId))
-                $_errors->set(Text::substring($key, Text::length($tmpId)+1), $value);
-        });
-
-        throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $_errors ]);
+    finally {
+        $data->set('$ctx', $_ctx);
     }
 
     return $output;
+});
+
+/**
+ * Validates the input data using the specified models and passes the provided context as "$ctx"
+ * variable to all validators. Returns the validated object and its context. If any validation
+ * error occurs an exception will be thrown.
+ * @code (`shield:validate-ctx` <context-object> <input-object> <model-names>...)
+ * @example
+ * (shield:validate-ctx {} (gateway.body) "Model1")
+ * ; {"data":{},"ctx":{}}
+ */
+Expr::register('_shield:validate-ctx', function($parts, $data)
+{
+    $tmpId = '__';
+    $ctx = Expr::value($parts->get(1), $data);
+    $inputData = new Map([ $tmpId => Expr::value($parts->get(2), $data) ]);
+
+    $desc = [];
+    for ($i = 3; $i < $parts->length(); $i++)
+    {
+        $type = $parts->get($i)->get(0)->type;
+        if ($type === "string" || $type === "identifier") {
+            $tmp = Expr::value($parts->get($i));
+            $model = Shield::$models->get($tmp, $data);
+            if (!$model) {
+                $model = Shield::$rulesets->get($tmp, $data);
+                if (!$model)
+                    throw new Error('undefined ruleset or model: ' . $tmp);
+            }
+        }
+        else {
+            $model = Expr::value($parts->get($i), $data);
+            if (!($model instanceof ValidationModel))
+                throw new Error('value is not a validation model or ruleset');
+        }
+
+        $desc[] = $model->descriptor;
+    }
+
+    $outputData = new Map();
+    $errors = Shield::$errors != null ? Shield::$errors : new Map();
+
+    $_ctx = $data->get('$ctx');
+    $data->set('$ctx', $ctx);
+
+    try {
+        $output = null;
+        foreach ($desc as $_desc) {
+            Shield::validateValue($_desc, $tmpId, $inputData, $outputData, $data, $errors);
+            $newOutput = $outputData->get($tmpId);
+            if ($output === null)
+                $output = $newOutput;
+            else if ($newOutput !== null)
+                $output->merge($newOutput, true);
+        }
+
+        if ($errors !== Shield::$errors && $errors->length != 0) {
+            if ($errors->has($tmpId))
+                throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId) ]);
+
+            $_errors = new Map();
+            $errors->forEach(function($value, $key) use($_errors, $tmpId) {
+                if (Text::startsWith($key, $tmpId))
+                    $_errors->set(Text::substring($key, Text::length($tmpId)+1), $value);
+            });
+
+            throw new WindError('ValidationError', [ 'response' => Wind::R_VALIDATION_ERROR, 'fields' => $_errors ]);
+        }
+    }
+    finally {
+        $data->set('$ctx', $_ctx);
+    }
+
+    return new Map([ 'data' => $output, 'ctx' => $ctx ]);
 });
 
 /**

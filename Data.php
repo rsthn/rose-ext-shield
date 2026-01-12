@@ -442,19 +442,13 @@ class Data extends Rule
             throw $e;
         }
 
-        try {
-            $context->set('$root', $val);
-            $cur_output = new Map();
-            $this->checkType($this->flattened, $val, $name, false, $context, $cur_output, $input, $name, $errors);
+        $cur_output = new Map();
+        $this->checkType($this->flattened, $val, $name, false, $context, $cur_output, $input, $name, $errors);
 
-            if (!$cur_output->has($name))
-                return false;
-            $val = $cur_output->get($name);
-        }
-        finally {
-            $context->remove('$root');
-        }
+        if (!$cur_output->has($name))
+            return false;
 
+        $val = $cur_output->get($name);
         return true;
     }
 };

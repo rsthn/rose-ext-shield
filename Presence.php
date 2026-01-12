@@ -10,8 +10,7 @@ use Rose\Ext\Shield;
 
 class Presence extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'presence';
     }
 
