@@ -455,7 +455,7 @@ Expr::register('_shield:validate', function($parts, $data)
     $errors = Shield::$errors != null ? Shield::$errors : new Map();
 
     $_ctx = $data->get('$ctx');
-    $data->set('$ctx', $ctx);
+    $data->set('$ctx', new Map());
 
     try {
         $output = null;

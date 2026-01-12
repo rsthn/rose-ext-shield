@@ -1,3 +1,11 @@
+# v3.0.6 - Jan 12 2026
+
+#### QoL
+- Fixed bug causing value updated by 'use' rule not to be available in the input for subsequent validators.
+- Added 'validate-ctx' to pass and get a context object which is available everywhere as $ctx.
+
+<br/>
+
 # v3.0.5 - Jan 12 2026
 
 #### QoL

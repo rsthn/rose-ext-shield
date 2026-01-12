@@ -56,6 +56,15 @@ Validates the input data using the specified models. If any validation error occ
 (shield:validate (gateway.body) "Model1")
 ```
 
+### (`shield:validate-ctx` \<context-object> \<input-object> \<model-names>...)
+Validates the input data using the specified models and passes the provided context as "$ctx"
+variable to all validators. Returns the validated object and its context. If any validation
+error occurs an exception will be thrown.
+```lisp
+(shield:validate-ctx {} (gateway.body) "Model1")
+; {"data":{},"ctx":{}}
+```
+
 ### (`shield:begin`)
 Begins quiet validation mode. All validation errors will be accumulated, and should later be retrieved by calling `shield:end`,
 this is useful to batch multiple validation blocks at once.
