@@ -24,7 +24,7 @@ Ensures the request's body is at least the specified number of bytes. Fails with
 ### (`shield:body-max-size` \<max-size>)
 Ensures the request's body does not exceed the specified number of bytes. Fails with 422/@messages.request_body_too_large when so.
 
-### (`shield:ruleset` \<ruleset-name> \<rules...>)
+### (`shield:ruleset` [ruleset-name] \<rules...>)
 Registers a set of validation rules with the given name. This can later be used by name
 from the `use \<ruleset-name>` rule.
 ```lisp
@@ -34,7 +34,7 @@ from the `use \<ruleset-name>` rule.
 )
 ```
 
-### (`shield:model` \<name> \<data-descriptor>)
+### (`shield:model` [name] \<data-descriptor>)
 Registers a validation model with the given name to be used later with `shield:validate`.
 ```lisp
 (shield:model "Model1"

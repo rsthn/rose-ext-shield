@@ -1,3 +1,10 @@
+# v3.0.5 - Jan 12 2026
+
+#### QoL
+- Made semantics more robust and updated all unit tests.
+
+<br/>
+
 # v3.0.4 - Jan 12 2026
 
 - Fixed bug causing certain nested error message to have a wrong key.
