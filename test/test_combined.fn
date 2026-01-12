@@ -1,0 +1,95 @@
+(title "Combined tests")
+
+(expect:error
+    {"list.0.mode.colors.1" "@messages.not-matches"}
+    (fn (shield:validate {list [{mode { colors ["red" "blue" ]}}]} (shield:model
+        (object
+            list (array (object
+                mode (object
+                    colors (array (rules
+                        expect "string"
+                        not-matches "/blue/"
+                    ))
+                )
+            ))
+        )
+    )))
+)
+
+(shield:ruleset "valid_color"
+    expect "string"
+    not-matches "/blue/"
+)
+
+(shield:model "color_list"
+    (array "valid_color")
+)
+
+(shield:model "model_modes"
+    (object
+        mode (object
+                colors "color_list"
+            )
+    )
+)
+
+(shield:model "test_model_1"
+    (object
+        list (array "model_modes")
+    )
+)
+
+(expect:error
+    {"list.0.mode.colors.1" "@messages.not-matches"}
+    (fn (shield:validate {list [{mode { colors ["red" "blue" ]}}]} "test_model_1"))
+)
+
+
+
+
+(expect:eq
+    { likes { colors ["GREEN" "BLUE"] } }
+    (shield:validate (data_obj) (shield:model
+        (obj
+            likes (obj
+                colors (array (rules
+                    ignore (in? ["red"] ($))
+                    set (upper ($))
+                ))
+            )
+        )
+    ))
+    "array: ignore, set"
+)
+
+(expect:error
+    { "likes.colors.1" "@messages.invalid" }
+    (fn (shield:validate (local.data_obj) (shield:model
+        (obj
+            likes (obj
+                colors (array (rules
+                    check:@invalid (in? ["blue" "red"] ($))
+                ))
+            )
+        )
+    )))
+    "array: check"
+)
+
+(expect:eq
+    { likes { value "111" kind "NAMED" } }
+    (shield:validate (data_obj) (shield:model
+        (obj
+            likes (obj
+                kind (rules
+                    expect "string"
+                    set (upper ($))
+                    block (
+                        set $out.value "111"
+                    )
+                )
+            )
+        )
+    ))
+    "expect, block, set"
+)

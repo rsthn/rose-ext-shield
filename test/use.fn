@@ -1,0 +1,72 @@
+(title "use <name>")
+
+(shield:ruleset test1
+    required true
+    set (upper ($))
+    set (split " " ($))
+)
+
+(shield:ruleset test2
+    use test1
+    block (
+        set $out.name2 "buffy"
+    )
+)
+
+(shield:model test3
+    (object name (rules use "test2"))
+)
+
+(shield:model test4
+    (array (rules use "test3"))
+)
+
+(shield:ruleset test7
+    fail true
+)
+
+(shield:model test6
+    (object name (rules use "test7"))
+)
+
+(shield:model test5
+    (object
+        "list" (array (rules use "test6"))
+    )
+)
+
+(expect:error
+    "undefined ruleset or model: test0"
+    (fn (shield:validate "hello world" (shield:model (rules use "test0"))))
+    "use with invalid reference"
+)
+
+(expect:eq
+    {name ["JON" "DOE"]}
+    (shield:validate {name "jon doe"} (shield:model (object name (rules use "test1"))))
+    "use with ruleset"
+)
+
+(expect:eq
+    {name ["JON" "DOE"] name2 "buffy"}
+    (shield:validate {name "jon doe"} (shield:model (object name "test2")))
+    "use with nested ruleset"
+)
+
+(expect:eq
+    {name ["JON" "DOE"] name2 "buffy"}
+    (shield:validate {name "jon doe"} "test3")
+    "use with model"
+)
+
+(expect:eq
+    [{name ["A"] name2 "buffy"} {name ["B"] name2 "buffy"}]
+    (shield:validate [{name "a"} {name "b"}] "test4")
+    "use with nested model"
+)
+
+(expect:error
+    {"list.0.name" "@messages.fail" "list.1.name" "@messages.fail"}
+    (fn (shield:validate {list [{name "a"} {name "b"}]} "test5"))
+    "use with nested model and error reporting"
+)

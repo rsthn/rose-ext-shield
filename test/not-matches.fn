@@ -1,0 +1,31 @@
+(title "not-matches <string>")
+
+(expect:error
+    "\(not-matches\) reference expected to be string or regex name"
+    (fn (shield:validate null (shield:model (rules not-matches true ))))
+    "not-matches invalid reference type"
+)
+
+(expect:error
+    "\(not-matches\) undefined regex: my_regex"
+    (fn (shield:validate null (shield:model (rules not-matches "my_regex" ))))
+    "not-matches invalid regex"
+)
+
+(expect:eq
+    "hello Nice world"
+    (shield:validate "hello Nice world" (shield:model (rules not-matches "/good/i" )))
+    "not-matches using inline regex"
+)
+
+(expect:eq
+    "this is some year"
+    (shield:validate "this is some year" (shield:model (rules not-matches "number" )))
+    "not-matches using named regex"
+)
+
+(expect:error
+    "@messages.not-matches"
+    (fn (shield:validate "hello world" (shield:model (rules not-matches "/hello/" ))))
+    "not-matches matching pattern throws"
+)

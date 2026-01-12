@@ -1,0 +1,25 @@
+(title "max-length <int>")
+
+(expect:eq
+    "fox"
+    (shield:validate "fox" (shield:model (rules max-length 3 )))
+    "max-length passes"
+)
+
+(expect:error
+    "@messages.max-length:3"
+    (fn (shield:validate "foxy" (shield:model (rules max-length 3 ))))
+    "max-length fails"
+)
+
+(expect:error
+    "\(max-length\) reference value expected to be numeric"
+    (fn (shield:validate "-5" (shield:model (rules max-length "10" ))))
+    "max-length invalid reference"
+)
+
+(expect:error
+    "\(max-length\) argument expected to be string"
+    (fn (shield:validate -5 (shield:model (rules max-length 10 ))))
+    "max-length invalid argument"
+)

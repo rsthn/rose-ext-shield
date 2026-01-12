@@ -1,0 +1,25 @@
+(title "min-length <int>")
+
+(expect:eq
+    "fox"
+    (shield:validate "fox" (shield:model (rules min-length 3 )))
+    "min-length passes"
+)
+
+(expect:error
+    "@messages.min-length:3"
+    (fn (shield:validate "fo" (shield:model (rules min-length 3 ))))
+    "min-length fails"
+)
+
+(expect:error
+    "\(min-length\) reference value expected to be numeric"
+    (fn (shield:validate "-5" (shield:model (rules min-length "10" ))))
+    "min-length invalid reference"
+)
+
+(expect:error
+    "\(min-length\) argument expected to be string"
+    (fn (shield:validate -5 (shield:model (rules min-length 10 ))))
+    "min-length invalid argument"
+)

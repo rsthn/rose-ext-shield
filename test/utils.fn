@@ -1,0 +1,55 @@
+(set errors [])
+(set failed 0)
+
+(set width 25)
+(set padding (lpad (width) ""))
+
+(def-fn accum-error message
+    (array:push (local.errors) (message))
+)
+
+(def-fn title-end
+    (print "\n")
+    (when (local.errors.length)
+        (for err (local.errors)
+            (echo (err))
+            (inc local.failed)
+        )
+    )
+)
+
+(def-fn title value
+    (title-end)
+    (print (rpad (local.width) (value)) " ")
+    (set local.errors [])
+)
+
+(def-fn expect:eq expected real message="expected equal"
+    (set expected (dump (expected)))
+    (set real (dump (real)))
+    (ne? (expected) (real) (block
+        (print "\e[91m•\e[0m")
+        (accum-error (concat
+            "(local.padding)\e[90m┌───────┐\n"
+            "(local.padding)\e[90m│\e[97m (message)\e[0m\n"
+            "(local.padding)\e[90m│\e[3;38;5;155m  expected: (expected)\e[0m\n"
+            "(local.padding)\e[90m│\e[3;38;5;171m      real: (real)\e[0m\n"
+            "(local.padding)\e[90m└┘\e[0m"
+        ))
+        (ret)
+    ))
+    (print "\e[38;5;155m•\e[0m")
+)
+
+(def-fn expect:error expected callback message=""
+    (try
+        ((callback))
+        (set ex {}) )
+    (expect:eq (expected) (coalesce (ex.error) (ex.fields)) (message))
+)
+
+(echo
+    "\e[90m┌────────────────────┐\n"
+    "\e[90m│\e[97m Running Unit Tests \e[90m│\e[0m\n"
+    "\e[90m└────────────────────┘\e[0m"
+)

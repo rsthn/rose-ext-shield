@@ -1,0 +1,32 @@
+(title "check <bool>")
+
+(expect:error
+    "\(check\) reference value expected to be bool"
+    (fn (shield:validate null (shield:model (rules check "true" ))))
+    "check invalid reference"
+)
+
+(expect:eq
+    (data_array)
+    (shield:validate (data_array) (shield:model (array (rules check true ))))
+    "check true"
+)
+
+(expect:error
+    {"0" "@messages.check"
+     "1" "@messages.check"
+     "2" "@messages.check"
+     "3" "@messages.check"
+     "4" "@messages.check"
+     "5" "@messages.check"}
+    (fn (shield:validate (local.data_array) (shield:model (array (rules check false )))))
+    "check false"
+)
+
+(expect:error
+    {"0" "@messages.check:err_name"
+     "4" "@messages.check:err_name"
+     "5" "@messages.check:err_name"}
+    (fn (shield:validate (local.data_array) (shield:model (array (rules check:err_name (in? [2 3 4] ($)) )))))
+    "check with condition and named error"
+)

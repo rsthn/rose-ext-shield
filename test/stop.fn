@@ -1,0 +1,19 @@
+(title "stop <bool>")
+
+(expect:error
+    "\(stop\) reference value expected to be bool"
+    (fn (shield:validate null (shield:model (rules stop "true" ))))
+    "stop invalid reference"
+)
+
+(expect:eq
+    1
+    (shield:validate null (shield:model (rules set 1 stop true set 2)))
+    "stop true"
+)
+
+(expect:eq
+    2
+    (shield:validate (data_array) (shield:model (rules set 1 stop false set 2)))
+    "stop false"
+)

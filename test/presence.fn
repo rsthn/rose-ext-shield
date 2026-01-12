@@ -1,0 +1,62 @@
+(title "presence <value>")
+
+(expect:error
+    "\(presence\) invalid action for `presence` rule: something"
+    (fn (shield:validate "" (shield:model (rules presence "something" ))))
+    "presence invalid action throws"
+)
+
+(expect:error
+    {"name" "@messages.presence:true"}
+    (fn (shield:validate {} (shield:model (object name (rules presence true )))))
+    "presence true without presence throws"
+)
+
+(expect:eq
+    {"name" ""}
+    (shield:validate {name ""} (shield:model (object name (rules presence true ))))
+    "presence true with empty value returns value"
+)
+
+(expect:eq
+    {"name" null}
+    (shield:validate {name null} (shield:model (object name (rules presence true ))))
+    "presence true with null value returns value"
+)
+
+(expect:eq
+    {"name" "Jon"}
+    (shield:validate {name "Jon"} (shield:model (object name (rules presence true ))))
+    "presence true with value returns value"
+)
+
+
+(expect:eq
+    {}
+    (shield:validate {} (shield:model (object name (rules presence false set "wolf" ))))
+    "presence false without presence breaks"
+)
+
+(expect:eq
+    {name "wolf"}
+    (shield:validate {name ""} (shield:model (object name (rules presence false set "wolf" ))))
+    "presence false with presence and empty value continues"
+)
+
+(expect:eq
+    {name "wolf"}
+    (shield:validate {name null} (shield:model (object name (rules presence false set "wolf" ))))
+    "presence false with presence and null value continues"
+)
+
+(expect:eq
+    {name null}
+    (shield:validate {} (shield:model (object name (rules presence "true|null" set "wolf" ))))
+    "presence true|null without presence sets null and breaks"
+)
+
+(expect:eq
+    {name ""}
+    (shield:validate {} (shield:model (object name (rules presence "true|empty" set "wolf" ))))
+    "presence true|empty without presence sets \"\" and breaks"
+)

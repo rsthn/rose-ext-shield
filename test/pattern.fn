@@ -1,0 +1,31 @@
+(title "pattern <string>")
+
+(expect:error
+    "\(pattern\) reference expected to be string or regex name"
+    (fn (shield:validate null (shield:model (rules pattern true ))))
+    "pattern invalid reference type"
+)
+
+(expect:error
+    "\(pattern\) undefined regex: my_regex"
+    (fn (shield:validate null (shield:model (rules pattern "my_regex" ))))
+    "pattern invalid regex"
+)
+
+(expect:eq
+    "hello Nice world"
+    (shield:validate "hello Nice world" (shield:model (rules pattern "/nice/i" )))
+    "pattern using inline regex"
+)
+
+(expect:eq
+    "this is 2026 year"
+    (shield:validate "this is 2026 year" (shield:model (rules pattern "number" )))
+    "pattern using named regex"
+)
+
+(expect:eq
+    true
+    (shield:validate true (shield:model (rules pattern "number" )))
+    "pattern using named regex from non-string"
+)

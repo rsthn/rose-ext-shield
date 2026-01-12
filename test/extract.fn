@@ -1,0 +1,31 @@
+(title "extract <string>")
+
+(expect:error
+    "\(extract\) reference expected to be string or regex name"
+    (fn (shield:validate null (shield:model (rules extract true ))))
+    "extract invalid reference type"
+)
+
+(expect:error
+    "\(extract\) undefined regex: my_regex"
+    (fn (shield:validate null (shield:model (rules extract "my_regex" ))))
+    "extract invalid regex"
+)
+
+(expect:eq
+    "Nice"
+    (shield:validate "hello Nice world" (shield:model (rules extract "/nice/i" )))
+    "extract using inline regex"
+)
+
+(expect:eq
+    "2026"
+    (shield:validate "this is 2026 year" (shield:model (rules extract "number" )))
+    "extract using named regex"
+)
+
+(expect:eq
+    "1"
+    (shield:validate true (shield:model (rules extract "number" )))
+    "extract using named regex from non-string"
+)

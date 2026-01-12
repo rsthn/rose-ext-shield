@@ -1,0 +1,25 @@
+(title "ignore <bool>")
+
+(expect:error
+    "\(ignore\) reference value expected to be bool"
+    (fn (shield:validate null (shield:model (rules ignore "true" ))))
+    "ignore invalid reference"
+)
+
+(expect:eq
+    []
+    (shield:validate (data_array) (shield:model (array (rules ignore true ))))
+    "ignore true"
+)
+
+(expect:eq
+    (data_array)
+    (shield:validate (data_array) (shield:model (array (rules ignore false ))))
+    "ignore false"
+)
+
+(expect:eq
+    [2 4 6]
+    (shield:validate (data_array) (shield:model (array (rules ignore (odd? ($)) ))))
+    "ignore odd values"
+)

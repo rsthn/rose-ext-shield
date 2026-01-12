@@ -1,0 +1,37 @@
+(title "requires <value>")
+
+(expect:error
+    "\(requires\) invalid action for `requires` rule: something"
+    (fn (shield:validate "" (shield:model (rules requires "field|something" ))))
+    "requires invalid action throws"
+)
+
+(expect:eq
+    {x 1}
+    (shield:validate {x 1} (shield:model (object ref? (int) name (rules requires "ref") x (int) )))
+    "requires without ref breaks"
+)
+
+(expect:eq
+    {ref 1 name null x 1}
+    (shield:validate {x 1 ref 1} (shield:model (object ref? (int) name (rules requires "ref") x (int) )))
+    "requires with ref continues"
+)
+
+(expect:eq
+    {ref 2 name null x 1}
+    (shield:validate {x 1} (shield:model (object ref (rules set 2) name (rules requires "ref") x (int) )))
+    "requires with artificial ref continues"
+)
+
+(expect:error
+    {name "@messages.requires:ref"}
+    (fn (shield:validate {x 1} (shield:model (object ref? (int) name (rules requires "ref|error") x (int) ))))
+    "requires without ref errors"
+)
+
+(expect:eq
+    {name "fox" x 1}
+    (shield:validate {x 1} (shield:model (object ref? (int) name (rules set "fox" requires "ref|stop") x (int) )))
+    "requires without ref stops"
+)

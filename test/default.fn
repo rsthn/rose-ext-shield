@@ -1,0 +1,31 @@
+(title "default <value>")
+
+(expect:eq
+    null
+    (shield:validate "" (shield:model (rules default "yes" set null )))
+    "default continues"
+)
+
+(expect:eq
+    [1 2 3]
+    (shield:validate "" (shield:model (rules default [1 2 3] )))
+    "default root value"
+)
+
+(expect:eq
+    [true false]
+    (shield:validate [true false] (shield:model (rules default [1 2 3] )))
+    "default preserves original"
+)
+
+(expect:eq
+    ["jon" "super" "doe"]
+    (shield:validate ["Jon" "" "Doe"] (shield:model (array (rules default "Super" set (lower ($)) ))))
+    "default array values"
+)
+
+(expect:eq
+    {code "Blue" name "red"}
+    (shield:validate {name "Red"} (shield:model (obj code (rules default "Blue") name (rules set (lower ($)) ))))
+    "default obj fields"
+)

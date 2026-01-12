@@ -1,0 +1,31 @@
+(title "default-stop <value>")
+
+(expect:eq
+    "yes"
+    (shield:validate '' (shield:model (rules default-stop "yes" set null )))
+    "default-stop breaks"
+)
+
+(expect:eq
+    [1 2 3]
+    (shield:validate '' (shield:model (rules default-stop [1 2 3] set null )))
+    "default-stop root value"
+)
+
+(expect:eq
+    [true false]
+    (shield:validate [true false] (shield:model (rules default-stop [1 2 3] )))
+    "default-stop preserves original"
+)
+
+(expect:eq
+    ["jon" "Super" "doe"]
+    (shield:validate ["Jon" "" "Doe"] (shield:model (array (rules default-stop "Super" set (lower ($)) ))))
+    "default-stop array values"
+)
+
+(expect:eq
+    {code "Blue" name "red"}
+    (shield:validate {name "Red"} (shield:model (obj code (rules default-stop "Blue" set null) name (rules set (lower ($)) ))))
+    "default-stop obj fields"
+)

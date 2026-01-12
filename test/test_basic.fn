@@ -1,0 +1,63 @@
+(title "Basic field checks")
+
+(expect:error
+    "array specifier expects only one argument"
+    (fn (shield:validate [] (shield:model (array true false)  )))
+    "error array specifier argument count"
+)
+
+(expect:error
+    "rest indicator `*` must be the last element in object specifier"
+    (fn (shield:validate {} (shield:model (obj * name "identifier")  )))
+    "error object * not last"
+)
+
+(expect:error
+    "expected a specifier name after `name` in object specifier"
+    (fn (shield:validate {} (shield:model (obj name)  )))
+    "error object specifier missing"
+)
+
+(expect:error
+    "invalid specifier name: bad_name"
+    (fn (shield:validate {} (shield:model (bad_name)  )))
+    "error invalid specifier"
+)
+
+;;
+
+(expect:error
+    {name "@messages.expect:int"}
+    (fn (shield:validate (local.data_obj) (shield:model (object name (int)))))
+    "wrong field type"
+)
+
+(expect:eq
+    {name (data_obj.name)}
+    (shield:validate (data_obj) (shield:model (object name (str))))
+    "correct field type"
+)
+
+(expect:eq
+    {}
+    (shield:validate (data_obj) (shield:model (object name2? (str))))
+    "optional field"
+)
+
+(expect:error
+    {name "undefined ruleset or model: bad_name"}
+    (fn (shield:validate (local.data_obj) (shield:model (object name "bad_name"))))
+    "non-existant model/ruleset"
+)
+
+(expect:eq
+    {email (data_obj.email)}
+    (shield:validate (data_obj) (shield:model (object email (rules pattern "email"))))
+    "regex passing"
+)
+
+(expect:error
+    {name "@messages.pattern:identifier"}
+    (fn (shield:validate (local.data_obj) (shield:model (object name (rules pattern "identifier")))))
+    "regex failing"
+)

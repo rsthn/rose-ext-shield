@@ -1,0 +1,31 @@
+(title "unique-items <int>")
+
+(expect:error
+    "\(unique-items\) reference value expected to be bool"
+    (fn (shield:validate true (shield:model (rules unique-items "10" ))))
+    "unique-items invalid reference"
+)
+
+(expect:error
+    "\(unique-items\) argument expected to be array"
+    (fn (shield:validate true (shield:model (rules unique-items true ))))
+    "unique-items invalid argument"
+)
+
+(expect:eq
+    [1 2 3]
+    (shield:validate [1 2 3] (shield:model (rules unique-items true )))
+    "unique-items passes with verification"
+)
+
+(expect:eq
+    [1 2 3 3 3]
+    (shield:validate [1 2 3 3 3] (shield:model (rules unique-items false )))
+    "unique-items passes without verification"
+)
+
+(expect:error
+    "@messages.unique-items"
+    (fn (shield:validate [1 2 3 3] (shield:model (rules unique-items true ))))
+    "unique-items fails"
+)
