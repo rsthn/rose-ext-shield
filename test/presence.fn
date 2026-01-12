@@ -30,7 +30,6 @@
     "presence true with value returns value"
 )
 
-
 (expect:eq
     {}
     (shield:validate {} (shield:model (object name (rules presence false set "wolf" ))))

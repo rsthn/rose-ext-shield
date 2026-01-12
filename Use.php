@@ -32,6 +32,7 @@ class Use_ extends Rule
         if ($ignored)
             throw new IgnoreField();
 
+        $input->set($name, $output->get($name));
         $val = $output->get($name);
         return true;
     }
