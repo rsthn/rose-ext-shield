@@ -2,24 +2,24 @@
 
 (expect:eq
     "fox"
-    (shield:validate "fox" (shield:model (rules max-length 3 )))
+    (shield:validate "fox" (shield:ruleset __inline__ max-length 3 ))
     "max-length passes"
 )
 
 (expect:error
     "@messages.max-length:3"
-    (fn (shield:validate "foxy" (shield:model (rules max-length 3 ))))
+    (fn (shield:validate "foxy" (shield:ruleset __inline__ max-length 3 )))
     "max-length fails"
 )
 
 (expect:error
     "\(max-length\) reference value expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules max-length "10" ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ max-length "10" )))
     "max-length invalid reference"
 )
 
 (expect:error
     "\(max-length\) argument expected to be string"
-    (fn (shield:validate -5 (shield:model (rules max-length 10 ))))
+    (fn (shield:validate -5 (shield:ruleset __inline__ max-length 10 )))
     "max-length invalid argument"
 )

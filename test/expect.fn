@@ -2,124 +2,124 @@
 
 (expect:error
     "\(expect\) invalid type: true"
-    (fn (shield:validate null (shield:model (rules expect "true" ))))
+    (fn (shield:validate null (shield:ruleset __inline__ expect "true" )))
     "expect invalid type"
 )
 
 (expect:error
     "@messages.expect:obj"
-    (fn (shield:validate (null) (shield:model (rules expect "object"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "object")))
     "expect fails for object"
 )
 (expect:error
     "@messages.expect:obj"
-    (fn (shield:validate (null) (shield:model (rules expect "obj"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "obj")))
     "expect fails for obj"
 )
 (expect:error
     "@messages.expect:array"
-    (fn (shield:validate (null) (shield:model (rules expect "array"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "array")))
     "expect fails for array"
 )
 (expect:error
     "@messages.expect:bool"
-    (fn (shield:validate (null) (shield:model (rules expect "boolean"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "boolean")))
     "expect fails for boolean"
 )
 (expect:error
     "@messages.expect:bool"
-    (fn (shield:validate (null) (shield:model (rules expect "bool"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "bool")))
     "expect fails for bool"
 )
 (expect:error
     "@messages.expect:int"
-    (fn (shield:validate (null) (shield:model (rules expect "integer"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "integer")))
     "expect fails for integer"
 )
 (expect:error
     "@messages.expect:int"
-    (fn (shield:validate (null) (shield:model (rules expect "int"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "int")))
     "expect fails for int"
 )
 (expect:error
     "@messages.expect:float"
-    (fn (shield:validate (null) (shield:model (rules expect "float"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "float")))
     "expect fails for float"
 )
 (expect:error
     "@messages.expect:str"
-    (fn (shield:validate (null) (shield:model (rules expect "string"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "string")))
     "expect fails for string"
 )
 (expect:error
     "@messages.expect:str"
-    (fn (shield:validate (null) (shield:model (rules expect "str"))))
+    (fn (shield:validate (null) (shield:ruleset __inline__ expect "str")))
     "expect fails for str"
 )
 (expect:error
     "@messages.expect:null"
-    (fn (shield:validate ('xx') (shield:model (rules expect "null"))))
+    (fn (shield:validate ('xx') (shield:ruleset __inline__ expect "null")))
     "expect fails for null"
 )
 
 
 (expect:eq
     (data_obj)
-    (shield:validate (data_obj)   (shield:model (rules expect "object")))
+    (shield:validate (data_obj)   (shield:ruleset __inline__ expect "object"))
     "expect successful for object"
 )
 (expect:eq
     (data_obj)
-    (shield:validate (data_obj)   (shield:model (rules expect "obj")))
+    (shield:validate (data_obj)   (shield:ruleset __inline__ expect "obj"))
     "expect successful for obj"
 )
 (expect:eq
     (data_array)
-    (shield:validate (data_array) (shield:model (rules expect "array")))
+    (shield:validate (data_array) (shield:ruleset __inline__ expect "array"))
     "expect successful for array"
 )
 (expect:eq
     (data_array)
-    (shield:validate (data_array) (shield:model (rules expect "array")))
+    (shield:validate (data_array) (shield:ruleset __inline__ expect "array"))
     "expect successful for array"
 )
 (expect:eq
     (data_bool)
-    (shield:validate (data_bool)  (shield:model (rules expect "boolean")))
+    (shield:validate (data_bool)  (shield:ruleset __inline__ expect "boolean"))
     "expect successful for boolean"
 )
 (expect:eq
     (data_bool)
-    (shield:validate (data_bool)  (shield:model (rules expect "bool")))
+    (shield:validate (data_bool)  (shield:ruleset __inline__ expect "bool"))
     "expect successful for bool"
 )
 (expect:eq
     (data_int)
-    (shield:validate (data_int)   (shield:model (rules expect "integer")))
+    (shield:validate (data_int)   (shield:ruleset __inline__ expect "integer"))
     "expect successful for integer"
 )
 (expect:eq
     (data_int)
-    (shield:validate (data_int)   (shield:model (rules expect "int")))
+    (shield:validate (data_int)   (shield:ruleset __inline__ expect "int"))
     "expect successful for int"
 )
 (expect:eq
     (data_float)
-    (shield:validate (data_float) (shield:model (rules expect "float")))
+    (shield:validate (data_float) (shield:ruleset __inline__ expect "float"))
     "expect successful for float"
 )
 (expect:eq
     (data_str)
-    (shield:validate (data_str)   (shield:model (rules expect "string")))
+    (shield:validate (data_str)   (shield:ruleset __inline__ expect "string"))
     "expect successful for string"
 )
 (expect:eq
     (data_str)
-    (shield:validate (data_str)   (shield:model (rules expect "str")))
+    (shield:validate (data_str)   (shield:ruleset __inline__ expect "str"))
     "expect successful for str"
 )
 (expect:eq
     (data_null)
-    (shield:validate (data_null)  (shield:model (rules expect "null")))
+    (shield:validate (data_null)  (shield:ruleset __inline__ expect "null"))
     "expect successful for null"
 )

@@ -2,30 +2,30 @@
 
 (expect:eq
     "fox"
-    (shield:validate "fox" (shield:model (rules length 3 )))
+    (shield:validate "fox" (shield:ruleset __inline__ length 3 ))
     "length passes"
 )
 
 (expect:error
     "@messages.length:3"
-    (fn (shield:validate "foxy" (shield:model (rules length 3 ))))
+    (fn (shield:validate "foxy" (shield:ruleset __inline__ length 3 )))
     "length fails"
 )
 
 (expect:error
     "@messages.bad-length"
-    (fn (shield:validate "foxy" (shield:model (rules length:@bad-length 3 ))))
+    (fn (shield:validate "foxy" (shield:ruleset __inline__ length:@bad-length 3 )))
     "length fails with custom error"
 )
 
 (expect:error
     "\(length\) reference value expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules length "10" ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ length "10" )))
     "length invalid reference"
 )
 
 (expect:error
     "\(length\) argument expected to be string"
-    (fn (shield:validate -5 (shield:model (rules length 10 ))))
+    (fn (shield:validate -5 (shield:ruleset __inline__ length 10 )))
     "length invalid argument"
 )

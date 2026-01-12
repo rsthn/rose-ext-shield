@@ -2,24 +2,24 @@
 
 (expect:eq
     [1 2 3]
-    (shield:validate [1 2 3] (shield:model (rules min-items 3 )))
+    (shield:validate [1 2 3] (shield:ruleset __inline__ min-items 3 ))
     "min-items passes"
 )
 
 (expect:error
     "@messages.min-items:3"
-    (fn (shield:validate [1] (shield:model (rules min-items 3 ))))
+    (fn (shield:validate [1] (shield:ruleset __inline__ min-items 3 )))
     "min-items fails"
 )
 
 (expect:error
     "\(min-items\) reference value expected to be numeric"
-    (fn (shield:validate true (shield:model (rules min-items "10" ))))
+    (fn (shield:validate true (shield:ruleset __inline__ min-items "10" )))
     "min-items invalid reference"
 )
 
 (expect:error
     "\(min-items\) argument expected to be array or object"
-    (fn (shield:validate true (shield:model (rules min-items 10 ))))
+    (fn (shield:validate true (shield:ruleset __inline__ min-items 10 )))
     "min-items invalid argument"
 )

@@ -2,7 +2,7 @@
 
 (expect:error
     "\(check\) reference value expected to be bool"
-    (fn (shield:validate null (shield:model (rules check "true" ))))
+    (fn (shield:validate null (shield:ruleset __inline__ check "true" )))
     "check invalid reference"
 )
 

@@ -45,7 +45,13 @@
     (try
         ((callback))
         (set ex {}) )
-    (expect:eq (expected) (coalesce (ex.error) (ex.fields)) (message))
+
+    (when (eq? "WindError" (ex.type))
+        (expect:eq (expected) (coalesce (ex.details.error) (ex.details.fields)) (message))
+        (ret)
+    )
+
+    (expect:eq (expected) (ex.message) (message))
 )
 
 (echo

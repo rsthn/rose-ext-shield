@@ -37,7 +37,7 @@
 
 (expect:error
     "undefined ruleset or model: test0"
-    (fn (shield:validate "hello world" (shield:model (rules use "test0"))))
+    (fn (shield:validate "hello world" "test0"))
     "use with invalid reference"
 )
 

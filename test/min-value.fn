@@ -2,24 +2,24 @@
 
 (expect:eq
     10
-    (shield:validate 10 (shield:model (rules min-value 10 )))
+    (shield:validate 10 (shield:ruleset __inline__ min-value 10 ))
     "min-value passes"
 )
 
 (expect:error
     "@messages.min-value:10"
-    (fn (shield:validate 5 (shield:model (rules min-value 10 ))))
+    (fn (shield:validate 5 (shield:ruleset __inline__ min-value 10 )))
     "min-value fails"
 )
 
 (expect:error
     "\(min-value\) reference value expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules min-value "10" ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ min-value "10" )))
     "min-value invalid reference"
 )
 
 (expect:error
     "\(min-value\) argument expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules min-value 10 ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ min-value 10 )))
     "min-value invalid argument"
 )

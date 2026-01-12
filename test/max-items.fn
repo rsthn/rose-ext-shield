@@ -2,24 +2,24 @@
 
 (expect:eq
     [1 2 3]
-    (shield:validate [1 2 3] (shield:model (rules max-items 3 )))
+    (shield:validate [1 2 3] (shield:ruleset __inline__ max-items 3 ))
     "max-items passes"
 )
 
 (expect:error
     "@messages.max-items:3"
-    (fn (shield:validate [1 2 3 4] (shield:model (rules max-items 3 ))))
+    (fn (shield:validate [1 2 3 4] (shield:ruleset __inline__ max-items 3 )))
     "max-items fails"
 )
 
 (expect:error
     "\(max-items\) reference value expected to be numeric"
-    (fn (shield:validate true (shield:model (rules max-items "10" ))))
+    (fn (shield:validate true (shield:ruleset __inline__ max-items "10" )))
     "max-items invalid reference"
 )
 
 (expect:error
     "\(max-items\) argument expected to be array or object"
-    (fn (shield:validate true (shield:model (rules max-items 10 ))))
+    (fn (shield:validate true (shield:ruleset __inline__ max-items 10 )))
     "max-items invalid argument"
 )

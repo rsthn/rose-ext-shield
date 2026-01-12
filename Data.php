@@ -425,6 +425,12 @@ class Data extends Rule
             throw new SkipError();
     }
 
+    public function prepare ($context) {
+        if (!$this->flattened)
+            $this->flattened = self::flatten($this->value, $context);
+        return $this->flattened;
+    }
+
     public function validate ($name, &$val, $input, $output, $context, $errors)
     {
         try {

@@ -2,7 +2,7 @@
 
 (expect:error
     "\(presence\) invalid action for `presence` rule: something"
-    (fn (shield:validate "" (shield:model (rules presence "something" ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ presence "something" )))
     "presence invalid action throws"
 )
 

@@ -67,8 +67,7 @@ class Shield
     /**
      * Initializes the registration maps.
      */
-    public static function init()
-    {
+    public static function init() {
         self::$rulesets = new Map();
         self::$models = new Map();
         self::$rules = new Map();
@@ -79,17 +78,8 @@ class Shield
     /**
      * Registers a validation rule handler.
      */
-    public static function registerRule (string $ruleName, string $className)
-    {
+    public static function registerRule (string $ruleName, string $className) {
         self::$rules->set($ruleName, $className);
-    }
-
-    /**
-     * Returns `true` if the specified rule exists.
-     */
-    public static function ruleExists (string $ruleName)
-    {
-        return self::$rules->has($ruleName);
     }
 
     /**
@@ -105,10 +95,8 @@ class Shield
 
             $key = Text::split(':', $key);
             $className = self::$rules->get($key->get(0));
-            if (!$className) {
-                throw new Error ('undefined validation rule: ' . $key->get(0));
-                return;
-            }
+            if (!$className)
+                throw new Error('undefined validation rule: ' . $key->get(0));
 
             $output_rules[] = new $className ($value, $key->{1});
         });
@@ -273,8 +261,12 @@ Expr::register('shield:body-required', function($args, $parts, $data)
         return true;
 
     $content_type = Gateway::getInstance()->input->contentType;
-    if ($content_type === null || Gateway::getInstance()->input->size == 0)
-        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+    if ($content_type === null || Gateway::getInstance()->input->size == 0) {
+        throw new WindError('RequestBodyMissing', [
+            'response' => 422,
+            'error' => Strings::get('@messages.request_body_missing')
+        ]);
+    }
 
     if ($args->length === 2 && $args->get(1) === true)
         return true;
@@ -303,8 +295,12 @@ Expr::register('shield:body-required', function($args, $parts, $data)
  * @code (`shield:body-min-size` <min-size>)
  */
 Expr::register('shield:body-min-size', function($args, $parts, $data) {
-    if (Gateway::getInstance()->input->contentType === null)
-        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+    if (Gateway::getInstance()->input->contentType === null) {
+        throw new WindError('RequestBodyMissing', [
+            'response' => 422,
+            'error' => Strings::get('@messages.request_body_missing')
+        ]);
+    }
 
     $min_size = (int)$args->get(1);
     $size = Gateway::getInstance()->input->size;
@@ -324,8 +320,12 @@ Expr::register('shield:body-min-size', function($args, $parts, $data) {
  * @code (`shield:body-max-size` <max-size>)
  */
 Expr::register('shield:body-max-size', function($args, $parts, $data) {
-    if (Gateway::getInstance()->input->contentType === null)
-        throw new WindError('RequestBodyMissing', [ 'response' => 422, 'error' => Strings::get('@messages.request_body_missing') ]);
+    if (Gateway::getInstance()->input->contentType === null) {
+        throw new WindError('RequestBodyMissing', [
+            'response' => 422,
+            'error' => Strings::get('@messages.request_body_missing')
+        ]);
+    }
 
     $max_size = (int)$args->get(1);
     $size = Gateway::getInstance()->input->size;
@@ -342,7 +342,7 @@ Expr::register('shield:body-max-size', function($args, $parts, $data) {
 /**
  * Registers a set of validation rules with the given name. This can later be used by name
  * from the `use <ruleset-name>` rule.
- * @code (`shield:ruleset` <ruleset-name> <rules...>)
+ * @code (`shield:ruleset` [ruleset-name] <rules...>)
  * @example
  * (shield:ruleset "email"
  *   max-length 256
@@ -353,29 +353,28 @@ Expr::register('_shield:ruleset', function($parts, $data)
 {
     $name = Expr::value($parts->get(1), $data);
     if (!\Rose\isString($name))
-        throw new ArgumentError('shield:ruleset expects \'ruleset-name\' parameter to be a string.');
+        throw new Error('expected `ruleset-name` parameter to be a string');
 
-    $rules = new Arry();
-    for ($i = 2; $i < $parts->length(); $i += 2)
-    {
-        $key = Expr::value($parts->get($i), $data);
-        if (substr($key, -1) === ':') // TODO: Deprecate using ':' to separate rule name and value
-            $key = substr($key, 0, strlen($key)-1);
+    $rules = Shield::parseDescriptor($parts, $data, 2);
 
-        $tmp = $parts->get($i+1);
-        if ($tmp->length == 1 && ($tmp->get(0)->type !== 'template' && $tmp->get(0)->type !== 'string'))
-            $tmp = Expr::value($tmp, $data);
-
-        $rules->push(new Arry([$key, $tmp], false));
+    if ($name === '__inline__') {
+        $desc = Shield::getDescriptor($rules, $data);
+        $model = new ValidationModel($desc);
+        return $model;
     }
 
+    if (Shield::$rulesets->has($name))
+        throw new Error('duplicate model name: ' . $name);
+    if (Shield::$models->has($name))
+        throw new Error('model with the same name already exists: ' . $name);
+
     Shield::$rulesets->set($name, Shield::getDescriptor($rules, $data));
-    return null;
+    return Shield::$rulesets->get($name);
 });
 
 /**
  * Registers a validation model with the given name to be used later with `shield:validate`.
- * @code (`shield:model` <name> <data-descriptor>)
+ * @code (`shield:model` [name] <data-descriptor>)
  * @example
  * (shield:model "Model1"
  *    (object
@@ -394,14 +393,25 @@ Expr::register('_shield:model', function($parts, $data) {
     $name = null;
     if ($type === "string" || $type === "identifier")
         $name = Expr::value($parts->get(1), $data);
-
     $i = $name === null ? 0 : 1;
+
     $parts->set($i, 'data');
     $desc = Shield::parseDescriptor($parts, $data, $i);
     $desc = Shield::getDescriptor($desc, $data);
-
     $model = new ValidationModel($desc);
-    if (!$name) return $model;
+
+    $info = $model->descriptor[0][0]->prepare($data);
+    $type = $info->get(0);
+    if ($type !== 'object' && $type !== 'obj' && $type !== 'array' && $type !== 'vector')
+        throw new Error('model root requires only `obj`, `array` or `vector` specifiers');
+
+    if (!$name)
+        return $model;
+
+    if (Shield::$models->has($name))
+        throw new Error('duplicate model name: ' . $name);
+    if (Shield::$rulesets->has($name))
+        throw new Error('ruleset with the same name already exists: ' . $name);
 
     Shield::$models->set($name, $model);
     return null;
@@ -427,14 +437,17 @@ Expr::register('_shield:validate', function($parts, $data)
         if ($type === "string" || $type === "identifier") {
             $tmp = Expr::value($parts->get($i));
             $model = Shield::$models->get($tmp, $data);
-            if (!$model)
-                throw new ArgumentError('undefined model: ' . $tmp);
+            if (!$model) {
+                $model = Shield::$rulesets->get($tmp, $data);
+                if (!$model)
+                    throw new Error('undefined ruleset or model: ' . $tmp);
+            }
         }
-        else
+        else {
             $model = Expr::value($parts->get($i), $data);
-
-        if (!($model instanceof ValidationModel))
-            throw new ArgumentError ('shield:validate expects a ValidationModel object');
+            if (!($model instanceof ValidationModel))
+                throw new Error('value is not a validation model or ruleset');
+        }
 
         $desc[] = $model->descriptor;
     }

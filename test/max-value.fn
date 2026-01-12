@@ -2,24 +2,24 @@
 
 (expect:eq
     10
-    (shield:validate 10 (shield:model (rules max-value 10 )))
+    (shield:validate 10 (shield:ruleset __inline__ max-value 10 ))
     "max-value passes"
 )
 
 (expect:error
     "@messages.max-value:10"
-    (fn (shield:validate 15 (shield:model (rules max-value 10 ))))
+    (fn (shield:validate 15 (shield:ruleset __inline__ max-value 10 )))
     "max-value fails"
 )
 
 (expect:error
     "\(max-value\) reference value expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules max-value "10" ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ max-value "10" )))
     "max-value invalid reference"
 )
 
 (expect:error
     "\(max-value\) argument expected to be numeric"
-    (fn (shield:validate "-5" (shield:model (rules max-value 10 ))))
+    (fn (shield:validate "-5" (shield:ruleset __inline__ max-value 10 )))
     "max-value invalid argument"
 )

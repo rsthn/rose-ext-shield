@@ -2,19 +2,19 @@
 
 (expect:eq
     null
-    (shield:validate "" (shield:model (rules default "yes" set null )))
+    (shield:validate "" (shield:ruleset __inline__ default "yes" set null ))
     "default continues"
 )
 
 (expect:eq
     [1 2 3]
-    (shield:validate "" (shield:model (rules default [1 2 3] )))
+    (shield:validate "" (shield:ruleset __inline__ default [1 2 3] ))
     "default root value"
 )
 
 (expect:eq
     [true false]
-    (shield:validate [true false] (shield:model (rules default [1 2 3] )))
+    (shield:validate [true false] (shield:ruleset __inline__ default [1 2 3] ))
     "default preserves original"
 )
 

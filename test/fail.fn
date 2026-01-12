@@ -2,18 +2,18 @@
 
 (expect:eq
     "test"
-    (shield:validate "test" (shield:model (rules fail false )))
+    (shield:validate "test" (shield:ruleset __inline__ fail false ))
     "fail false"
 )
 
 (expect:error
     "@messages.fail"
-    (fn (shield:validate 4 (shield:model (rules fail true ))))
+    (fn (shield:validate 4 (shield:ruleset __inline__ fail true )))
     "fail true"
 )
 
 (expect:error
     "@messages.error-message"
-    (fn (shield:validate 4 (shield:model (rules fail:@error-message true ))))
+    (fn (shield:validate 4 (shield:ruleset __inline__ fail:@error-message true )))
     "fail with custom error"
 )

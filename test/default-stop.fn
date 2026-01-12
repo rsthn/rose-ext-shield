@@ -2,19 +2,19 @@
 
 (expect:eq
     "yes"
-    (shield:validate '' (shield:model (rules default-stop "yes" set null )))
+    (shield:validate '' (shield:ruleset __inline__ default-stop "yes" set null ))
     "default-stop breaks"
 )
 
 (expect:eq
     [1 2 3]
-    (shield:validate '' (shield:model (rules default-stop [1 2 3] set null )))
+    (shield:validate '' (shield:ruleset __inline__ default-stop [1 2 3] set null ))
     "default-stop root value"
 )
 
 (expect:eq
     [true false]
-    (shield:validate [true false] (shield:model (rules default-stop [1 2 3] )))
+    (shield:validate [true false] (shield:ruleset __inline__ default-stop [1 2 3] ))
     "default-stop preserves original"
 )
 

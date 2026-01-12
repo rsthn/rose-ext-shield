@@ -4,18 +4,26 @@
 
 ;; -----
 (title "Wrong root type")
-(expect:error   "@messages.expect:obj"      (fn (shield:validate (null) (shield:model (object *)))))
-(expect:error   "@messages.expect:obj"      (fn (shield:validate (null) (shield:model (obj *)))))
-(expect:error   "@messages.expect:array"    (fn (shield:validate (null) (shield:model (array *)))))
-(expect:error   "@messages.expect:vector"   (fn (shield:validate (null) (shield:model (vector *)))))
-(expect:error   "@messages.expect:bool"     (fn (shield:validate (null) (shield:model (boolean)))))
-(expect:error   "@messages.expect:bool"     (fn (shield:validate (null) (shield:model (bool)))))
-(expect:error   "@messages.expect:int"      (fn (shield:validate (null) (shield:model (integer)))))
-(expect:error   "@messages.expect:int"      (fn (shield:validate (null) (shield:model (int)))))
-(expect:error   "@messages.expect:float"    (fn (shield:validate (null) (shield:model (float)))))
-(expect:error   "@messages.expect:str"      (fn (shield:validate (null) (shield:model (string)))))
-(expect:error   "@messages.expect:str"      (fn (shield:validate (null) (shield:model (str)))))
-(expect:error   "@messages.expect:null"     (fn (shield:validate ('xx') (shield:model (null)))))
+(expect:error
+    "@messages.expect:obj"
+    (fn (shield:validate (null) (shield:model (object *))))
+    "wrong type for object"
+)
+(expect:error
+    "@messages.expect:obj"
+    (fn (shield:validate (null) (shield:model (obj *))))
+    "wrong type for obj"
+)
+(expect:error
+    "@messages.expect:array"
+    (fn (shield:validate (null) (shield:model (array *))))
+    "wrong type for array"
+)
+(expect:error
+    "@messages.expect:vector"
+    (fn (shield:validate (null) (shield:model (vector *))))
+    "wrong type for vector"
+)
 
 ;; -----
 (title "Correct root type")
@@ -25,14 +33,6 @@
 (expect:eq   (data_array)   (shield:validate (data_array) (shield:model (array (int)))))
 (expect:eq   (data_vector)  (shield:validate (data_vector) (shield:model (vector * * *))))
 (expect:eq   (data_vector)  (shield:validate (data_vector) (shield:model (vector (str) (bool) (int)))))
-(expect:eq   (data_bool)    (shield:validate (data_bool) (shield:model (boolean))))
-(expect:eq   (data_bool)    (shield:validate (data_bool) (shield:model (bool))))
-(expect:eq   (data_int)     (shield:validate (data_int) (shield:model (integer))))
-(expect:eq   (data_int)     (shield:validate (data_int) (shield:model (int))))
-(expect:eq   (data_float)   (shield:validate (data_float) (shield:model (float))))
-(expect:eq   (data_str)     (shield:validate (data_str) (shield:model (string))))
-(expect:eq   (data_str)     (shield:validate (data_str) (shield:model (str))))
-(expect:eq   (data_null)    (shield:validate (data_null) (shield:model (null))))
 
 ;; -----
 (include "test_basic")

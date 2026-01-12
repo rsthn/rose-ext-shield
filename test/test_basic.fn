@@ -2,25 +2,25 @@
 
 (expect:error
     "array specifier expects only one argument"
-    (fn (shield:validate [] (shield:model (array true false)  )))
+    (fn (shield:validate [] (shield:model (array true false))))
     "error array specifier argument count"
 )
 
 (expect:error
     "rest indicator `*` must be the last element in object specifier"
-    (fn (shield:validate {} (shield:model (obj * name "identifier")  )))
+    (fn (shield:model (obj * name "identifier")))
     "error object * not last"
 )
 
 (expect:error
     "expected a specifier name after `name` in object specifier"
-    (fn (shield:validate {} (shield:model (obj name)  )))
+    (fn (shield:validate {} (shield:model (obj name))))
     "error object specifier missing"
 )
 
 (expect:error
     "invalid specifier name: bad_name"
-    (fn (shield:validate {} (shield:model (bad_name)  )))
+    (fn (shield:validate {} (shield:model (bad_name))))
     "error invalid specifier"
 )
 

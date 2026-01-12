@@ -2,54 +2,54 @@
 
 (expect:eq
     "green"
-    (shield:validate "green" (shield:model (rules enum "red,blue,green" )))
+    (shield:validate "green" (shield:ruleset __inline__ enum "red,blue,green" ))
     "enum correct value from string"
 )
 
 (expect:eq
     "green"
-    (shield:validate "green" (shield:model (rules enum ["red" "blue" "green"] )))
+    (shield:validate "green" (shield:ruleset __inline__ enum ["red" "blue" "green"] ))
     "enum correct value from array"
 )
 
 (expect:eq
     3
-    (shield:validate "green" (shield:model (rules enum { "red" 1 "blue" 2 "green" 3 } )))
+    (shield:validate "green" (shield:ruleset __inline__ enum { "red" 1 "blue" 2 "green" 3 } ))
     "enum correct value from obj"
 )
 
 (expect:error
     "@messages.enum"
-    (fn (shield:validate 4 (shield:model (rules enum [1 2 3] ))))
+    (fn (shield:validate 4 (shield:ruleset __inline__ enum [1 2 3] )))
     "enum incorrect value"
 )
 
 (expect:error
     "@messages.invalid-value"
-    (fn (shield:validate 4 (shield:model (rules enum:@invalid-value [1 2 3] ))))
+    (fn (shield:validate 4 (shield:ruleset __inline__ enum:@invalid-value [1 2 3] )))
     "enum incorrect value with custom error"
 )
 
 (expect:error
     "\(enum\) reference expected to be array, object or string"
-    (fn (shield:validate "" (shield:model (rules enum true ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ enum true )))
     "enum invalid reference"
 )
 
 (expect:error
     "\(enum\) reference values list is empty"
-    (fn (shield:validate "" (shield:model (rules enum [] ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ enum [] )))
     "enum empty reference list"
 )
 
 (expect:error
     "\(enum\) reference values list is empty"
-    (fn (shield:validate "" (shield:model (rules enum "" ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ enum "" )))
     "enum empty reference list from string"
 )
 
 (expect:error
     "\(enum\) reference values map is empty"
-    (fn (shield:validate "" (shield:model (rules enum {} ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ enum {} )))
     "enum empty reference map"
 )

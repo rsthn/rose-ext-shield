@@ -2,42 +2,42 @@
 
 (expect:error
     "\(required\) invalid action for `required` rule: something"
-    (fn (shield:validate "" (shield:model (rules required "something" ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ required "something" )))
     "required with invalid action throws"
 )
 
 (expect:error
     "@messages.required:true"
-    (fn (shield:validate "" (shield:model (rules required true ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ required true )))
     "required true without value throws"
 )
 
 (expect:eq
     "fox"
-    (shield:validate "fox" (shield:model (rules required true )))
+    (shield:validate "fox" (shield:ruleset __inline__ required true ))
     "required true with value returns value"
 )
 
 (expect:eq
     null
-    (shield:validate "" (shield:model (rules required false set "wolf" )))
+    (shield:validate "" (shield:ruleset __inline__ required false set "wolf" ))
     "required false without value breaks"
 )
 
 (expect:eq
     "wolf"
-    (shield:validate "fox" (shield:model (rules required false set "wolf" )))
+    (shield:validate "fox" (shield:ruleset __inline__ required false set "wolf" ))
     "required false with value continues"
 )
 
 (expect:eq
     null
-    (shield:validate "" (shield:model (rules required "true|null" set "wolf" )))
+    (shield:validate "" (shield:ruleset __inline__ required "true|null" set "wolf" ))
     "required true|null without value sets null and breaks"
 )
 
 (expect:eq
     ""
-    (shield:validate "" (shield:model (rules required "true|empty" set "wolf" )))
+    (shield:validate "" (shield:ruleset __inline__ required "true|empty" set "wolf" ))
     "required true|empty without value sets \"\" and breaks"
 )

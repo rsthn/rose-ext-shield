@@ -2,30 +2,30 @@
 
 (expect:eq
     "found_hello"
-    (shield:validate "hello world" (shield:model (rules
+    (shield:validate "hello world" (shield:ruleset __inline__
         case-when (in? ($) "hello")
             set "found_hello"
         case-end
-    )))
+    ))
     "case-when single"
 )
 
 (expect:eq
     "FOUND_BYE"
-    (shield:validate "bye world" (shield:model (rules
+    (shield:validate "bye world" (shield:ruleset __inline__
         case-when (in? ($) "hello")
             set "found_hello"
         case-when (in? ($) "bye")
             set "found_bye"
         case-end
         set (upper ($))
-    )))
+    ))
     "case-when multiple"
 )
 
 (expect:eq
     "none"
-    (shield:validate "good world" (shield:model (rules
+    (shield:validate "good world" (shield:ruleset __inline__
         case-when (in? ($) "hello")
             set "found_hello"
         case-when (in? ($) "bye")
@@ -33,22 +33,8 @@
         case-else
             set "none"
         case-end
-    )))
+    ))
     "case-when multiple with case-else"
 )
 
 ;; todo: nested case-when not supported
-;(expect:eq
-;    "found_good_nice"
-;    (shield:validate "good and nice world" (shield:model (rules
-;        case-when (in? ($) "good")
-;            set (upper ($))
-;            case-when (in? ($) "NICE")
-;                set "found_good_nice"
-;            case-end
-;        case-else
-;            set "none"
-;        case-end
-;    )))
-;    "case-when multiple nested"
-;)

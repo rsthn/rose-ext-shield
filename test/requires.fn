@@ -2,7 +2,7 @@
 
 (expect:error
     "\(requires\) invalid action for `requires` rule: something"
-    (fn (shield:validate "" (shield:model (rules requires "field|something" ))))
+    (fn (shield:validate "" (shield:ruleset __inline__ requires "field|something" )))
     "requires invalid action throws"
 )
 

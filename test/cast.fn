@@ -3,228 +3,228 @@
 ;; invalid type
 (expect:error
     "\(cast\) invalid type: bad_type"
-    (fn (shield:validate true (shield:model (rules cast "bad_type") )))
+    (fn (shield:validate true (shield:ruleset __inline__ cast "bad_type" )))
     "cast invalid type" )
 
 ;; null
 (expect:eq
     null
-    (shield:validate true (shield:model (rules cast "null") ))
+    (shield:validate true (shield:ruleset __inline__ cast "null" ))
     "cast null from bool" )
 (expect:eq
     null
-    (shield:validate 100 (shield:model (rules cast "null") ))
+    (shield:validate 100 (shield:ruleset __inline__ cast "null" ))
     "cast null from int" )
 (expect:eq
     null
-    (shield:validate 100.5 (shield:model (rules cast "null") ))
+    (shield:validate 100.5 (shield:ruleset __inline__ cast "null" ))
     "cast null from float" )
 (expect:eq
     null
-    (shield:validate "value" (shield:model (rules cast "null") ))
+    (shield:validate "value" (shield:ruleset __inline__ cast "null" ))
     "cast null from str" )
 (expect:eq
     null
-    (shield:validate [] (shield:model (rules cast "null") ))
+    (shield:validate [] (shield:ruleset __inline__ cast "null" ))
     "cast null from array" )
 (expect:eq
     null
-    (shield:validate {} (shield:model (rules cast "null") ))
+    (shield:validate {} (shield:ruleset __inline__ cast "null" ))
     "cast null from obj" )
 
 ;; array
 (expect:eq
     [true]
-    (shield:validate true (shield:model (rules cast "array") ))
+    (shield:validate true (shield:ruleset __inline__ cast "array" ))
     "cast array from bool" )
 (expect:eq
     [100]
-    (shield:validate 100 (shield:model (rules cast "array") ))
+    (shield:validate 100 (shield:ruleset __inline__ cast "array" ))
     "cast array from int" )
 (expect:eq
     [100.5]
-    (shield:validate 100.5 (shield:model (rules cast "array") ))
+    (shield:validate 100.5 (shield:ruleset __inline__ cast "array" ))
     "cast array from float" )
 (expect:eq
     ["value"]
-    (shield:validate "value" (shield:model (rules cast "array") ))
+    (shield:validate "value" (shield:ruleset __inline__ cast "array" ))
     "cast array from str" )
 (expect:eq
     [1 2 3]
-    (shield:validate [1 2 3] (shield:model (rules cast "array") ))
+    (shield:validate [1 2 3] (shield:ruleset __inline__ cast "array" ))
     "cast array from array" )
 (expect:eq
     [{x 1 y 2}]
-    (shield:validate {x 1 y 2} (shield:model (rules cast "array") ))
+    (shield:validate {x 1 y 2} (shield:ruleset __inline__ cast "array" ))
     "cast array from obj" )
 
 ;; bool
 (expect:eq
     true
-    (shield:validate true (shield:model (rules cast "bool") ))
+    (shield:validate true (shield:ruleset __inline__ cast "bool" ))
     "cast bool from bool true" )
 (expect:eq
     false
-    (shield:validate false (shield:model (rules cast "bool") ))
+    (shield:validate false (shield:ruleset __inline__ cast "bool" ))
     "cast bool from bool false" )
 
 (expect:eq
     true
-    (shield:validate "true" (shield:model (rules cast "bool") ))
+    (shield:validate "true" (shield:ruleset __inline__ cast "bool" ))
     "cast bool from str 'true'" )
 (expect:eq
     false
-    (shield:validate "false" (shield:model (rules cast "bool") ))
+    (shield:validate "false" (shield:ruleset __inline__ cast "bool" ))
     "cast bool from str 'false'" )
 (expect:eq
     true
-    (shield:validate "100" (shield:model (rules cast "bool") ))
+    (shield:validate "100" (shield:ruleset __inline__ cast "bool" ))
     "cast bool from str '100'" )
 (expect:eq
     false
-    (shield:validate "0" (shield:model (rules cast "bool") ))
+    (shield:validate "0" (shield:ruleset __inline__ cast "bool" ))
     "cast bool from str '0'" )
 (expect:eq
     true
-    (shield:validate "-100" (shield:model (rules cast "bool") ))
+    (shield:validate "-100" (shield:ruleset __inline__ cast "bool" ))
     "cast bool from str '-100'" )
 
 (expect:eq
     false
-    (shield:validate 0 (shield:model (rules cast "bool") ))
+    (shield:validate 0 (shield:ruleset __inline__ cast "bool" ))
     "cast bool from zero int" )
 (expect:eq
     true
-    (shield:validate -20 (shield:model (rules cast "bool") ))
+    (shield:validate -20 (shield:ruleset __inline__ cast "bool" ))
     "cast bool from negative int" )
 (expect:eq
     true
-    (shield:validate 20 (shield:model (rules cast "bool") ))
+    (shield:validate 20 (shield:ruleset __inline__ cast "bool" ))
     "cast bool from positive int" )
 (expect:eq
     true
-    (shield:validate 10.5 (shield:model (rules cast "bool") ))
+    (shield:validate 10.5 (shield:ruleset __inline__ cast "bool" ))
     "cast bool from positive float" )
 (expect:eq
     true
-    (shield:validate -10.5 (shield:model (rules cast "bool") ))
+    (shield:validate -10.5 (shield:ruleset __inline__ cast "bool" ))
     "cast bool from negative float" )
 
 ;; int
 (expect:eq
     100
-    (shield:validate 100 (shield:model (rules cast "int") ))
+    (shield:validate 100 (shield:ruleset __inline__ cast "int" ))
     "cast int from positive int" )
 (expect:eq
     -100
-    (shield:validate -100 (shield:model (rules cast "int") ))
+    (shield:validate -100 (shield:ruleset __inline__ cast "int" ))
     "cast int from negative int" )
 (expect:eq
     0
-    (shield:validate 0 (shield:model (rules cast "int") ))
+    (shield:validate 0 (shield:ruleset __inline__ cast "int" ))
     "cast int from zero int" )
 
 (expect:eq
     100
-    (shield:validate "100" (shield:model (rules cast "int") ))
+    (shield:validate "100" (shield:ruleset __inline__ cast "int" ))
     "cast int from str '100'" )
 (expect:eq
     -100
-    (shield:validate "-100" (shield:model (rules cast "int") ))
+    (shield:validate "-100" (shield:ruleset __inline__ cast "int" ))
     "cast int from str '-100'" )
 (expect:eq
     0
-    (shield:validate "0" (shield:model (rules cast "int") ))
+    (shield:validate "0" (shield:ruleset __inline__ cast "int" ))
     "cast int from str '0'" )
 
 (expect:eq
     1
-    (shield:validate true (shield:model (rules cast "int") ))
+    (shield:validate true (shield:ruleset __inline__ cast "int" ))
     "cast int from bool true" )
 (expect:eq
     0
-    (shield:validate false (shield:model (rules cast "int") ))
+    (shield:validate false (shield:ruleset __inline__ cast "int" ))
     "cast int from bool false" )
 
 ;; float
 (expect:eq
     100.5
-    (shield:validate 100.5 (shield:model (rules cast "float") ))
+    (shield:validate 100.5 (shield:ruleset __inline__ cast "float" ))
     "cast float from positive float" )
 (expect:eq
     -100.5
-    (shield:validate -100.5 (shield:model (rules cast "float") ))
+    (shield:validate -100.5 (shield:ruleset __inline__ cast "float" ))
     "cast float from negative float" )
 (expect:eq
     0.0
-    (shield:validate 0.0 (shield:model (rules cast "float") ))
+    (shield:validate 0.0 (shield:ruleset __inline__ cast "float" ))
     "cast float from zero float" )
 
 (expect:eq
     100
-    (shield:validate 100 (shield:model (rules cast "float") ))
+    (shield:validate 100 (shield:ruleset __inline__ cast "float" ))
     "cast float from positive int" )
 (expect:eq
     -100
-    (shield:validate -100 (shield:model (rules cast "float") ))
+    (shield:validate -100 (shield:ruleset __inline__ cast "float" ))
     "cast float from negative int" )
 (expect:eq
     0
-    (shield:validate 0 (shield:model (rules cast "float") ))
+    (shield:validate 0 (shield:ruleset __inline__ cast "float" ))
     "cast float from zero int" )
 
 (expect:eq
     100.5
-    (shield:validate "100.5" (shield:model (rules cast "float") ))
+    (shield:validate "100.5" (shield:ruleset __inline__ cast "float" ))
     "cast float from str '100.5'" )
 (expect:eq
     -100.5
-    (shield:validate "-100.5" (shield:model (rules cast "float") ))
+    (shield:validate "-100.5" (shield:ruleset __inline__ cast "float" ))
     "cast float from str '-100.5'" )
 (expect:eq
     0.0
-    (shield:validate "0.0" (shield:model (rules cast "float") ))
+    (shield:validate "0.0" (shield:ruleset __inline__ cast "float" ))
     "cast float from str '0.0'" )
 (expect:eq
     0
-    (shield:validate "value" (shield:model (rules cast "float") ))
+    (shield:validate "value" (shield:ruleset __inline__ cast "float" ))
     "cast float from str 'value'" )
 
 (expect:eq
     0
-    (shield:validate false (shield:model (rules cast "float") ))
+    (shield:validate false (shield:ruleset __inline__ cast "float" ))
     "cast float from bool false" )
 (expect:eq
     1
-    (shield:validate true (shield:model (rules cast "float") ))
+    (shield:validate true (shield:ruleset __inline__ cast "float" ))
     "cast float from bool true" )
 
 ;; str
 (expect:eq
     "true"
-    (shield:validate true (shield:model (rules cast "str") ))
+    (shield:validate true (shield:ruleset __inline__ cast "str" ))
     "cast str from bool true" )
 (expect:eq
     "false"
-    (shield:validate false (shield:model (rules cast "str") ))
+    (shield:validate false (shield:ruleset __inline__ cast "str" ))
     "cast str from bool false" )
 (expect:eq
     "100"
-    (shield:validate 100 (shield:model (rules cast "str") ))
+    (shield:validate 100 (shield:ruleset __inline__ cast "str" ))
     "cast str from int" )
 (expect:eq
     "100.5"
-    (shield:validate 100.5 (shield:model (rules cast "str") ))
+    (shield:validate 100.5 (shield:ruleset __inline__ cast "str" ))
     "cast str from float" )
 (expect:eq
     "value"
-    (shield:validate "value" (shield:model (rules cast "str") ))
+    (shield:validate "value" (shield:ruleset __inline__ cast "str" ))
     "cast str from str" )
 (expect:eq
     "[1,2,3]"
-    (shield:validate [1 2 3] (shield:model (rules cast "str") ))
+    (shield:validate [1 2 3] (shield:ruleset __inline__ cast "str" ))
     "cast str from array" )
 (expect:eq
     "{\"x\":1,\"y\":2}"
-    (shield:validate {x 1 y 2} (shield:model (rules cast "str") ))
+    (shield:validate {x 1 y 2} (shield:ruleset __inline__ cast "str" ))
     "cast str from obj" )
