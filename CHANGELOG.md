@@ -1,3 +1,12 @@
+# v3.0.7 - Jan 22 2026
+
+#### QoL
+- Added new rule 'Matches' which acts like 'Pattern' but for an immediate regex.
+- Updated 'NotMatches' rule to use immediate regex.
+- Empty field name can be used now when validating to run checks without outputing a field.
+
+<br/>
+
 # v3.0.6 - Jan 12 2026
 
 #### QoL
