@@ -63,6 +63,7 @@
 (include "match")
 (include "pattern")
 (include "not-matches")
+(include "matches")
 (include "case")
 
 (echo)

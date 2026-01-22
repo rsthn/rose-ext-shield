@@ -9,13 +9,11 @@ use Rose\Text;
 
 class Fail extends Rule
 {
-    public function getName ()
-    {
+    public function getName() {
         return 'fail';
     }
 
-    public function validate ($name, &$val, $input, $output, $context, $errors)
-    {
+    public function validate($name, &$val, $input, $output, $context, $errors) {
         return !\Rose\bool($this->getValue($context));
     }
 };

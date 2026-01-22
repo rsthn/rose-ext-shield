@@ -1,0 +1,19 @@
+(title "matches <string>")
+
+(expect:error
+    "\(matches\) reference expected to be regex string"
+    (fn (shield:validate null (shield:ruleset __inline__ matches true )))
+    "matches invalid reference type"
+)
+
+(expect:eq
+    "hello Nice world"
+    (shield:validate "hello Nice world" (shield:ruleset __inline__ matches "/nice/i" ))
+    "matches passes"
+)
+
+(expect:error
+    "@messages.matches"
+    (fn (shield:validate "hello world" (shield:ruleset __inline__ matches "/nice/" )))
+    "matches fails"
+)

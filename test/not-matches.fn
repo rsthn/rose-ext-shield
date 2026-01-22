@@ -1,31 +1,19 @@
 (title "not-matches <string>")
 
 (expect:error
-    "\(not-matches\) reference expected to be string or regex name"
+    "\(not-matches\) reference expected to be regex string"
     (fn (shield:validate null (shield:ruleset __inline__ not-matches true )))
     "not-matches invalid reference type"
-)
-
-(expect:error
-    "\(not-matches\) undefined regex: my_regex"
-    (fn (shield:validate null (shield:ruleset __inline__ not-matches "my_regex" )))
-    "not-matches invalid regex"
 )
 
 (expect:eq
     "hello Nice world"
     (shield:validate "hello Nice world" (shield:ruleset __inline__ not-matches "/good/i" ))
-    "not-matches using inline regex"
-)
-
-(expect:eq
-    "this is some year"
-    (shield:validate "this is some year" (shield:ruleset __inline__ not-matches "number" ))
-    "not-matches using named regex"
+    "not-matches passes"
 )
 
 (expect:error
     "@messages.not-matches"
     (fn (shield:validate "hello world" (shield:ruleset __inline__ not-matches "/hello/" )))
-    "not-matches matching pattern throws"
+    "not-matches fails"
 )

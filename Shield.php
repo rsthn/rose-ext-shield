@@ -190,6 +190,8 @@ class Shield
             break;
         }
 
+        if ($key === '') $value = self::$UNDEF;
+
         $context->set('$out', $_out);
         $context->set('$in', $_in);
         $context->set('$', $_val);
@@ -471,6 +473,8 @@ Expr::register('_shield:validate', function($parts, $data)
         if ($errors !== Shield::$errors && $errors->length != 0) {
             if ($errors->has($tmpId))
                 throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId) ]);
+            if ($errors->has($tmpId.'.'))
+                throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId.'.') ]);
 
             $_errors = new Map();
             $errors->forEach(function($value, $key) use($_errors, $tmpId) {
@@ -545,6 +549,8 @@ Expr::register('_shield:validate-ctx', function($parts, $data)
         if ($errors !== Shield::$errors && $errors->length != 0) {
             if ($errors->has($tmpId))
                 throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId) ]);
+            if ($errors->has($tmpId.'.'))
+                throw new WindError('BadRequest', [ 'response' => Wind::R_BAD_REQUEST, 'error' => $errors->get($tmpId.'.') ]);
 
             $_errors = new Map();
             $errors->forEach(function($value, $key) use($_errors, $tmpId) {
@@ -600,6 +606,7 @@ class_exists('Rose\Ext\Shield\MaxLength');
 class_exists('Rose\Ext\Shield\Length');
 class_exists('Rose\Ext\Shield\Pattern');
 class_exists('Rose\Ext\Shield\NotMatches');
+class_exists('Rose\Ext\Shield\Matches');
 class_exists('Rose\Ext\Shield\Set');
 class_exists('Rose\Ext\Shield\Check');
 class_exists('Rose\Ext\Shield\Default_');

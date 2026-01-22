@@ -11,10 +11,10 @@ use Rose\Text;
 use Rose\Strings;
 use Rose\Regex;
 
-class NotMatches extends Rule
+class Matches extends Rule
 {
     public function getName() {
-        return 'not-matches';
+        return 'matches';
     }
 
     public function validate ($name, &$val, $input, $output, $context, $errors)
@@ -23,8 +23,8 @@ class NotMatches extends Rule
         if (!\Rose\isString($value))
             throw new Error('reference expected to be regex string');
 
-        return !Regex::_matches($value, (string)$val);
+        return Regex::_matches($value, (string)$val);
     }
 };
 
-Shield::registerRule('not-matches', 'Rose\Ext\Shield\NotMatches');
+Shield::registerRule('matches', 'Rose\Ext\Shield\Matches');
