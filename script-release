@@ -14,8 +14,8 @@ END
 
 RUN php test\\test.php
 
-ECHO {clr 92}Updating documentation ...{clr 0}
-    RUN rose :vdocs Shield.php
+#ECHO {clr 92}Updating documentation ...{clr 0}
+#    RUN rose :vdocs Shield.php
 
 ECHO {clr 92}Commiting ...{clr 0}
     r0 {NEW_VERSION}
