@@ -1,3 +1,10 @@
+# v3.0.8 - Apr 30 2026
+
+#### Qol
+- Updated documentation and dependencies.
+
+<br/>
+
 # v3.0.7 - Jan 22 2026
 
 #### QoL
