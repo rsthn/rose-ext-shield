@@ -1,3 +1,14 @@
+# v3.0.9 - Aug 01 2026
+
+#### QoL
+- Fixed crash when passing a ruleset name to 'shield:validate' or 'shield:validate-ctx'.
+- Fixed invalid 'set' and 'block' examples in documentation.
+- Documented data descriptors used by 'shield:model'.
+- Corrected 'shield:ruleset' signature as the ruleset name is mandatory.
+- Clarified throw conditions, value trimming and type coercion in rule documentation.
+
+<br/>
+
 # v3.0.8 - Apr 30 2026
 
 #### Qol
