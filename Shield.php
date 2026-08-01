@@ -344,7 +344,7 @@ Expr::register('shield:body-max-size', function($args, $parts, $data) {
 /**
  * Registers a set of validation rules with the given name. This can later be used by name
  * from the `use <ruleset-name>` rule.
- * @code (`shield:ruleset` [ruleset-name] <rules...>)
+ * @code (`shield:ruleset` <ruleset-name> <rules...>)
  * @example
  * (shield:ruleset "email"
  *   max-length 256
@@ -439,9 +439,12 @@ Expr::register('_shield:validate', function($parts, $data)
             $tmp = Expr::value($parts->get($i));
             $model = Shield::$models->get($tmp, $data);
             if (!$model) {
-                $model = Shield::$rulesets->get($tmp, $data);
-                if (!$model)
+                // Rulesets are stored as plain descriptors, not as ValidationModel objects.
+                $ruleset = Shield::$rulesets->get($tmp, $data);
+                if (!$ruleset)
                     throw new Error('undefined ruleset or model: ' . $tmp);
+                $desc[] = $ruleset;
+                continue;
             }
         }
         else {
@@ -515,9 +518,12 @@ Expr::register('_shield:validate-ctx', function($parts, $data)
             $tmp = Expr::value($parts->get($i));
             $model = Shield::$models->get($tmp, $data);
             if (!$model) {
-                $model = Shield::$rulesets->get($tmp, $data);
-                if (!$model)
+                // Rulesets are stored as plain descriptors, not as ValidationModel objects.
+                $ruleset = Shield::$rulesets->get($tmp, $data);
+                if (!$ruleset)
                     throw new Error('undefined ruleset or model: ' . $tmp);
+                $desc[] = $ruleset;
+                continue;
             }
         }
         else {

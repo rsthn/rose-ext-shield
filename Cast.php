@@ -32,7 +32,7 @@ class Cast extends Rule
                 break;
 
             case 'float':
-                $val = (double)$val;
+                $val = (float)$val;
                 break;
 
             case 'string': case 'str':

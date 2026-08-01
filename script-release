@@ -14,6 +14,9 @@ END
 
 RUN php test\\test.php
 
+# Documentation generation is intentionally disabled. `rose :vdocs` only reads the docblocks in Shield.php, so running it
+# would overwrite README.md and drop the hand-written `Data Descriptors` and `Validation Rules` sections, which document
+# the rule classes. Do not re-enable without first making :vdocs merge instead of overwrite.
 #ECHO {clr 92}Updating documentation ...{clr 0}
 #    RUN rose :vdocs Shield.php
 

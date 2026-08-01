@@ -48,6 +48,18 @@
 )
 
 (expect:eq
+    ["JON" "DOE"]
+    (shield:validate "jon doe" "test1")
+    "validate with a ruleset name"
+)
+
+(expect:eq
+    {data ["JON" "DOE"] ctx {}}
+    (shield:validate-ctx {} "jon doe" "test1")
+    "validate-ctx with a ruleset name"
+)
+
+(expect:eq
     {name ["JON" "DOE"] name2 "buffy"}
     (shield:validate {name "jon doe"} (shield:model (object name "test2")))
     "use with nested ruleset"
